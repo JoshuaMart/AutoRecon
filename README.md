@@ -31,7 +31,7 @@ ToolsDIR="/root/Recon/Tools" #Directory where tools was installed
 ResultsPath="/root/Recon" #Directory where you want scans results
 AquatonePorts="small" #Aquatone option, see his options
 TransferSH="https://transfer.sh" #Change this if you have you own transfer.sh
-subjackDebug="$/root/go/src/github.com/haccer/subjack/fingerprints.json" #Subjack bug without this ...
+subjackDebug="/root/go/src/github.com/haccer/subjack/fingerprints.json" #Subjack bug without this ...
 ```
 Run installer :
 ```bash
