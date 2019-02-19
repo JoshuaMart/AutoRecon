@@ -6,7 +6,7 @@ GoPath="/root/go"
 
 ## SCRIPTS DEPENDANCES
 apt-get install git jq python3 python3-pip -y
-pip3 install jsbeautifier
+pip2 install jsbeautifier
 mkdir $ToolsDIR
 
 ## Install AMASS
@@ -50,6 +50,9 @@ mv tko-subs $ToolsDIR/TkoSubs/TkoSubs
 
 ## Install DirSearch
 git clone https://github.com/maurosoria/dirsearch.git $ToolsDIR/DirSearch
+
+## Install CORStest
+git clone https://github.com/RUB-NDS/CORStest.git $ToolsDIR/CORStest
 
 ## Install LinkFinder
 git clone https://github.com/GerbenJavado/LinkFinder.git $ToolsDIR/LinkFinder

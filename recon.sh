@@ -16,7 +16,7 @@ die() {
 help() {
   banner
   echo -e "Usage : ./recon.sh -d domain.tld -a -u
-      -d | --domain  (required) : Launch passive scan (Passive Amass, Aquatone, Subjack, TkoSubs)
+      -d | --domain  (required) : Launch passive scan (Passive Amass, Aquatone, Subjack, TkoSubs, CORStest)
       -a | --active  (optional) : Launch active scans (Active Amass, Sublist3r LinkFinder, Aquatone)
       -u | --upload  (optional) : Upload archive on Transfer.sh
   "
@@ -38,14 +38,14 @@ scan() {
   echo -e "Scan is in \e[31mprogress\e[0m, take a coffee"
 
   ## ENUM SUB-DOMAINS
-  echo -e ">> Passive subdomains enumeration with \e36mAmass\e[0m, \e36mCertspotter\e[0m & \e36mCrt.sh\e[0m"
+  echo -e ">> Passive subdomains enumeration with \e[36mAmass\e[0m, \e[36mCertspotter\e[0m & \e[36mCrt.sh\e[0m"
   $ToolsDIR/Amass/amass -passive -d $domain -o $ResultsPath/$domain/passive.txt > /dev/null 2>&1
   curl -s https://certspotter.com/api/v0/certs\?domain\=$domain | jq '.[].dns_names[]' | sed 's/\"//g' | sed 's/\*\.//g' | sort | uniq >> $ResultsPath/$domain/certspotter.txt
   curl -s "https://crt.sh/?q=%.$domain&output=json" | jq '.[].name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort | uniq >> $ResultsPath/$domain/crtsh.txt
   if [ -v active ] ## IF ACTIVE OPTION WAS PROVIDE
   then
     ## LAUNCH AMASS & SUBLIST3R ACTIVE SCAN
-    echo -e ">> Active subdomains enumeration with \e36mAmass\e[0m & \e36mSublist3r\e[0m"
+    echo -e ">> Active subdomains enumeration with \e[36mAmass\e[0m & \e[36mSublist3r\e[0m"
     $ToolsDIR/Amass/amass -active -brute -min-for-recursive 0 -d $domain -o $ResultsPath/$domain/active.txt > /dev/null 2>&1
     python3 $ToolsDIR/Sublist3r/sublist3r.py -d $domain -o $ResultsPath/$domain/sublist3r.txt > /dev/null 2>&1
   fi
@@ -64,7 +64,7 @@ scan() {
   rm $ResultsPath/$domain/$domain.txt
 
   ## CHECK RESULTS WITH MASSDNS
-  echo -e ">> Check results with \e36mMassDNS\e[0m"
+  echo -e ">> Check results with \e[36mMassDNS\e[0m"
   printf "8.8.8.8\n1.1.1.1" > $ToolsDIR/MassDNS/resolvers.txt
   $ToolsDIR/MassDNS/bin/massdns -r $ToolsDIR/MassDNS/resolvers.txt -t A -o S -w $ResultsPath/$domain/massdns.txt $ResultsPath/$domain/domains.txt > /dev/null 2>&1
   rm $ResultsPath/$domain/domains.txt
@@ -76,7 +76,7 @@ scan() {
   rm $ResultsPath/$domain/tmp_domains.txt $ResultsPath/$domain/tmp2_domains.txt
 
   ## CHECK TAKEOVER WITH SUBJACK AND TKOSUBS
-  echo -e ">> Checking takeover with \e36mSubjack\e[0m & \e36mTkoSubs\e[0m"
+  echo -e ">> Checking takeover with \e[36mSubjack\e[0m & \e[36mTkoSubs\e[0m"
   $ToolsDIR/Subjack -w $ResultsPath/$domain/domains.txt -t 100 -o $ResultsPath/$domain/Subjack.txt -c $subjackDebug -v -ssl > /dev/null 2>&1
   $ToolsDIR/TkoSubs/TkoSubs -domains=$ResultsPath/$domain/domains.txt -data=$ToolsDIR/TkoSubs/providers-data.csv -output=$ResultsPath/$domain/TkoSubs.csv > /dev/null 2>&1
 
@@ -89,7 +89,7 @@ scan() {
     sed -i s/' '\$//g $ResultsPath/$domain/urlsHTTP.txt
 
     ## CHECK JS URLS WITH LINKFINDER
-    echo -e ">> Checking JS files with \e36mLinkFinder\e[0m"
+    echo -e ">> Checking JS files with \e[36mLinkFinder\e[0m"
     cat $ResultsPath/$domain/urlsHTTPS.txt | while read rline; do python2 $ToolsDIR/LinkFinder/linkfinder.py -i $rline -o cli >> $ResultsPath/$domain/tmp.txt
     done
     cat $ResultsPath/$domain/urlsHTTP.txt | while read rline; do python2 $ToolsDIR/LinkFinder/linkfinder.py -i $rline -o cli >> $ResultsPath/$domain/tmp.txt
@@ -102,29 +102,27 @@ scan() {
     rm $ResultsPath/$domain/tmp.txt $ResultsPath/$domain/tmp2.txt $ResultsPath/$domain/tmp3.txt
 
     ## LAUNCH AQUATONE
-    echo -e ">> Launch \e36mAquatone\e[0m scan"
+    echo -e ">> Launch \e[36mAquatone\e[0m scan"
     cat $ResultsPath/$domain/urlsHTTPS.txt | $ToolsDIR/Aquatone/Aquatone -out $ResultsPath/$domain/AquatoneHTTPS/ -ports $AquatonePorts -save-body false > /dev/null 2>&1
     cat $ResultsPath/$domain/urlsHTTP.txt | $ToolsDIR/Aquatone/Aquatone -out $ResultsPath/$domain/AquatoneHTTP/ -ports $AquatonePorts -save-body false > /dev/null 2>&1
     rm $ResultsPath/$domain/urlsHTTPS.txt $ResultsPath/$domain/urlsHTTP.txt
 
     ## CHECKING FOR CORS MISCONFIGURATION
-    echo -e ">> Checking CORS misconfiguration with \e36mCORSTest\e[0m"
-    python2 $ToolsDIR/CORStest/corstest.py -q $ResultsPath/$domain/domains.txt >> $ResultsPath/$domain/CORS.txt
+    echo -e ">> Checking CORS misconfiguration with \e[36mCORSTest\e[0m"
+    python2 $ToolsDIR/CORStest/corstest.py -q $ResultsPath/$domain/domains.txt -v >> $ResultsPath/$domain/CORS.txt
   fi
 
   ## CREATE AN ARCHIVE
   tar czvf $ResultsPath/$domain/$domain.tar.gz $ResultsPath/$domain/* > /dev/null 2>&1
 
   echo -e "\n=========== Scan is \e[32mfinish\e[0m ==========="
-  echo -e "Archive of scan was create, path : \e[36m$ResultsPath/$domain/$domain.tar.gz[0m"
+  echo -e "Archive of scan was create, path : \e[36m$ResultsPath/$domain/$domain.tar.gz\e[0m"
 
   if [ -v upload ] ## IF UPLOAD OPTION WAS PROVIDE
   then
     link=$(curl -H "Max-Downloads: 1" -H "Max-Days: 1" --upload-file $ResultsPath/$domain/$domain.tar.gz $TransferSH/$domain.tar.gz 2>&1 | grep "$TransferSH/.*$domain.tar.gz" -o)
     rm $ResultsPath/$domain/$domain.tar.gz
     echo -e "Download link of your report : \e[36m$link\e[0m"
-  else
-    [0m"
   fi
 
    echo -e "======================================\n"
