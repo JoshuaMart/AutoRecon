@@ -6,7 +6,7 @@ GoPath="/root/go"
 
 ## SCRIPTS DEPENDANCES
 apt-get install git jq python3 python3-pip -y
-pip3 install zulu datetime
+pip3 install jsbeautifier
 mkdir $ToolsDIR
 
 ## Install AMASS

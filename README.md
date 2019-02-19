@@ -13,28 +13,25 @@
 
 ## Installation
 - Installation tested on Debian 9 / Kali 2018.4
-- Recon tested on Debian 9 / Kali 2018.4 / Arch linux (Manjaro 18.x)
+- Recon tested on Debian 9 / Kali 2018.4 & 2019.1 / Arch linux (Manjaro 18.x)
 
 Requierement : [Golang](https://golang.org/doc/install)
 ```bash
 git clone https://github.com/JoshuaMart/AutoRecon
 cd AutoRecon
 ```
-Edit the following variables on install.sh :
+Edit the following variables on install.sh & create ToolsDir directories :
 ```bash
-ToolsDIR="/root/Recon/Tools"
-GoPath="/root/go"
+ToolsDIR="/root/Recon/Tools" #Directory where tools was installed
+GoPath="/root/go" #Your Go Workspace
 ```
 And the following variables on recon.sh :
 ```bash
 ToolsDIR="/root/Recon/Tools" #Directory where tools was installed
-GoPath="/root/go" #Directory where Go was installed
 ResultsPath="/root/Recon" #Directory where you want scans results
 AquatonePorts="small" #Aquatone option, see his options
-Wordlist="/root/Recon/Tools/DirSearch/db/dicc.txt" #Wordlist to use with dirsearch
 TransferSH="https://transfer.sh" #Change this if you have you own transfer.sh
-
-export GOPATH=/root/go #Subjack can have some bugs without this command ...
+subjackDebug="$/root/go/src/github.com/haccer/subjack/fingerprints.json" #Subjack bug without this ...
 ```
 Run installer :
 ```bash
@@ -43,11 +40,11 @@ Run installer :
 ## Usage
 
 ```bash
-./recon.sh -d domain.tld -g keyword -a -u
+./recon.sh -d domain.tld -a -u
 ```
 Options :
 ```bash
 -d | --domain (required) : Launch passive scan (Passive Amass, Aquatone, Subjack, TkoSubs)
--a | --active (optional): Launch active scans (Active Amass, LinkFinder, Aquatone)
+-a | --active (optional): Launch active scans (Active Amass, Sublist3r LinkFinder, Aquatone)
 -u | --upload (optional): Upload archive on Transfer.sh
 ```
