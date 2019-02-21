@@ -59,5 +59,7 @@ git clone https://github.com/GerbenJavado/LinkFinder.git $ToolsDIR/LinkFinder
 cd $ToolsDIR/LinkFinder
 python setup.py install
 
+## Install WafW00F
+pip install wafw00f
 
 ## END

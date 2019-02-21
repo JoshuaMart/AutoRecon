@@ -88,11 +88,16 @@ scan() {
     sed -i s/' '\$//g $ResultsPath/$domain/urlsHTTPS.txt
     sed -i s/' '\$//g $ResultsPath/$domain/urlsHTTP.txt
 
+    ## CHECK WAF WITH WAFW00F
+    echo -e ">> Checking WAF with \e[36mWafW00f\e[0m"
+    cat $ResultsPath/$domain/urlsHTTPS.txt | while read rline; do wafw00f $rline >> $ResultsPath/$domain/WafW00f.txt; echo -e "-----------------------------------------------" >> $ResultsPath/$domain/WafW00f.txt
+    done
+
     ## CHECK JS URLS WITH LINKFINDER
     echo -e ">> Checking JS files with \e[36mLinkFinder\e[0m"
-    cat $ResultsPath/$domain/urlsHTTPS.txt | while read rline; do python2 $ToolsDIR/LinkFinder/linkfinder.py -i $rline -o cli >> $ResultsPath/$domain/tmp.txt
+    cat $ResultsPath/$domain/urlsHTTPS.txt | while read rline; do echo -e "\n>> LinkFinder for $rline :" >> LinkFinder.txt; python2 $ToolsDIR/LinkFinder/linkfinder.py -i $rline -o cli >> $ResultsPath/$domain/tmp.txt
     done
-    cat $ResultsPath/$domain/urlsHTTP.txt | while read rline; do python2 $ToolsDIR/LinkFinder/linkfinder.py -i $rline -o cli >> $ResultsPath/$domain/tmp.txt
+    cat $ResultsPath/$domain/urlsHTTP.txt | while read rline; do echo -e "\n>> LinkFinder for $rline :" >> LinkFinder.txt; python2 $ToolsDIR/LinkFinder/linkfinder.py -i $rline -o cli >> $ResultsPath/$domain/tmp.txt
     done
 
     ## CLEAN LINKFINDER RESULTS

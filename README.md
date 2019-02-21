@@ -6,6 +6,7 @@
 - Combination of results, check with [MassDNS](https://github.com/blechschmidt/massdns)
 - Check for TakeOver with [Subjack](https://github.com/haccer/subjack) & [TkoSubs](https://github.com/anshumanbh/tko-subs)
 - Find JS files & find endpoints with [LinkFinder](https://github.com/GerbenJavado/LinkFinder)
+- WAF detection with [WafW00f](https://github.com/EnableSecurity/wafw00f)
 - Scan with [Aquatone](https://github.com/michenriksen/aquatone) 
 - Creation of an archive and upload with unique link on Transfer.sh
 
@@ -42,7 +43,7 @@ Run installer :
 ```bash
 ./recon.sh -d domain.tld -a -u
 ```
-![screen](https://image.noelshack.com/fichiers/2019/08/2/1550585488-2019-02-19-15-10-37-mremoteng-confcons-xml-debian-light.png)
+![AutoReconWorkflow](https://image.noelshack.com/fichiers/2019/08/4/1550767106-autorecon.png)
 
 Options :
 ```bash
