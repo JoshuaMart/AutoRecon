@@ -10,7 +10,7 @@
 - Scan with [Aquatone](https://github.com/michenriksen/aquatone) 
 - Creation of an archive and upload with unique link on Transfer.sh
 
-![Workflow](http://image.noelshack.com/fichiers/2019/08/1/1550510172-workflow.png)
+![Workflow](https://image.noelshack.com/fichiers/2019/08/4/1550767106-autorecon.png)
 
 ## Installation
 - Installation tested on Debian 9 / Kali 2018.4
@@ -43,7 +43,7 @@ Run installer :
 ```bash
 ./recon.sh -d domain.tld -a -u
 ```
-![AutoReconWorkflow](https://image.noelshack.com/fichiers/2019/08/4/1550767106-autorecon.png)
+![screen](https://image.noelshack.com/fichiers/2019/08/2/1550585488-2019-02-19-15-10-37-mremoteng-confcons-xml-debian-light.png)
 
 Options :
 ```bash
