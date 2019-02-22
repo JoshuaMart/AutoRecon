@@ -62,4 +62,7 @@ python setup.py install
 ## Install WafW00F
 pip install wafw00f
 
+## Install MassCan
+apt-get install masscan -y
+
 ## END

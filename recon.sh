@@ -18,6 +18,7 @@ help() {
   echo -e "Usage : ./recon.sh -d domain.tld -a -u
       -d | --domain  (required) : Launch passive scan (Passive Amass, Aquatone, Subjack, TkoSubs, CORStest)
       -a | --active  (optional) : Launch active scans (Active Amass, Sublist3r LinkFinder, Aquatone)
+      -m | --masscan (optional) : Launch masscan (Can be very long & very aggressive ...)
       -u | --upload  (optional) : Upload archive on Transfer.sh
   "
 }
@@ -88,6 +89,19 @@ scan() {
     sed -i s/' '\$//g $ResultsPath/$domain/urlsHTTPS.txt
     sed -i s/' '\$//g $ResultsPath/$domain/urlsHTTP.txt
 
+    ## GET IP OF EACH DOMAINS
+    cat $ResultsPath/$domain/domains.txt | while read rline; do host $rline | grep " has address "|cut -d" " -f4 >> $ResultsPath/$domain/IP.txt
+    done
+    cat $ResultsPath/$domain/IP.txt | sort | uniq > $ResultsPath/$domain/IPs.txt
+    rm $ResultsPath/$domain/IP.txt
+
+    if [ -v masscan ]
+    then
+      echo -e ">> Checking open ports with \e[36mMasscan\e[0m"
+      ## LAUNCH MASSCAN
+      masscan -p1-65535 -iL $ResultsPath/$domain/IPs.txt --rate=1000 -oJ $ResultsPath/$domain/masscan.json
+    fi
+
     ## CHECK WAF WITH WAFW00F
     echo -e ">> Checking WAF with \e[36mWafW00f\e[0m"
     cat $ResultsPath/$domain/urlsHTTPS.txt | while read rline; do wafw00f $rline >> $ResultsPath/$domain/WafW00f.txt; echo -e "-----------------------------------------------" >> $ResultsPath/$domain/WafW00f.txt
@@ -152,6 +166,9 @@ while :; do
             ;;
         -a|--active)
             active=true
+            ;;
+        -m|--masscan)
+            masscan=true
             ;;
         -u|--upload)
             upload=true

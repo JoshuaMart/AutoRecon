@@ -8,9 +8,10 @@
 - Find JS files & find endpoints with [LinkFinder](https://github.com/GerbenJavado/LinkFinder)
 - WAF detection with [WafW00f](https://github.com/EnableSecurity/wafw00f)
 - Scan with [Aquatone](https://github.com/michenriksen/aquatone) 
+- Check open ports with [Masscan](https://github.com/robertdavidgraham/masscan) 
 - Creation of an archive and upload with unique link on Transfer.sh
 
-![Workflow](https://image.noelshack.com/fichiers/2019/08/4/1550767106-autorecon.png)
+![Workflow](https://image.noelshack.com/fichiers/2019/08/5/1550830954-autorecon.png)
 
 ## Installation
 - Installation tested on Debian 9 / Kali 2018.4
@@ -47,7 +48,10 @@ Run installer :
 
 Options :
 ```bash
--d | --domain (required) : Launch passive scan (Passive Amass, Aquatone, Subjack, TkoSubs)
--a | --active (optional): Launch active scans (Active Amass, Sublist3r LinkFinder, Aquatone)
--u | --upload (optional): Upload archive on Transfer.sh
+-d | --domain  (required) : Launch passive scan (Passive Amass, Aquatone, Subjack, TkoSubs)
+-a | --active  (optional) : Launch active scans (Active Amass, Sublist3r LinkFinder, Aquatone)
+-m | --masscan (optional) : Launch masscan (Can be very long & very aggressive ...)
+-u | --upload  (optional) : Upload archive on Transfer.sh
 ```
+
+**If your internet connection crash with Masscan options, change --rate options to 100 at line 102**
