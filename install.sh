@@ -5,9 +5,9 @@ ToolsDIR="/root/Recon/Tools"
 GoPath="/root/go"
 
 ## SCRIPTS DEPENDANCES
-apt-get install git jq python3 python3-pip -y
+apt-get install git jq zip python3 python3-pip python3-dev -y
 pip2 install jsbeautifier
-mkdir $ToolsDIR
+mkdir -p $ToolsDIR
 
 ## Install AMASS
 wget https://github.com/OWASP/Amass/releases/download/2.9.1/amass_2.9.1_linux_amd64.zip
