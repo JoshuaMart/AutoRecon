@@ -14,8 +14,9 @@
 ![Workflow](https://image.noelshack.com/fichiers/2019/08/5/1550830954-autorecon.png)
 
 ## Installation
+- For the use of Aquatone, it is preferable to have a graphical interface on the server on which the script is executed
 - Installation tested on Debian 9 / Kali 2018.4
-- Recon tested on Debian 9 / Kali 2018.4 & 2019.1 / Arch linux (Manjaro 18.x)
+- Recon tested on Debian 9 / Ubuntu 18.04 / Kali 2018.4 & 2019.1 / Arch linux (Manjaro 18.x)
 
 Requierement : [Golang](https://golang.org/doc/install)
 ```bash
