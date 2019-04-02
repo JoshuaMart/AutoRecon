@@ -3,7 +3,6 @@
 ## VARIABLES
 ToolsDIR="/root/Recon/Tools"
 ResultsPath="/root/Recon"
-AquatonePorts="xlarge"
 TransferSH="https://transfer.sh"
 subjackDebug="/root/go/src/github.com/haccer/subjack/fingerprints.json"
 
@@ -16,8 +15,8 @@ die() {
 help() {
   banner
   echo -e "Usage : ./recon.sh -d domain.tld -a -u
-      -d | --domain  (required) : Launch passive scan (Passive Amass, Aquatone, Subjack, TkoSubs, CORStest)
-      -a | --active  (optional) : Launch active scans (Active Amass, Sublist3r LinkFinder, Aquatone)
+      -d | --domain  (required) : Launch passive scan (Passive Amass, Subjack, TkoSubs, CORStest)
+      -a | --active  (optional) : Launch active scans (Active Amass, Sublist3r LinkFinder, GoWitness)
       -m | --masscan (optional) : Launch masscan (Can be very long & very aggressive ...)
       -u | --upload  (optional) : Upload archive on Transfer.sh
   "
@@ -83,7 +82,7 @@ scan() {
 
   if [ -v active ] ## IF ACTIVE OPTION WAS PROVIDE
   then
-    ## CREATE  FILES WITH COMPLETE URL FOR LINKFINDER AND AQUATONE
+    ## CREATE  FILES WITH COMPLETE URL FOR LINKFINDER AND GoWitness
     sed -e 's/^/https:\/\//' $ResultsPath/$domain/domains.txt > $ResultsPath/$domain/urlsHTTPS.txt
     sed -e 's/^/http:\/\//' $ResultsPath/$domain/domains.txt > $ResultsPath/$domain/urlsHTTP.txt
     sed -i s/' '\$//g $ResultsPath/$domain/urlsHTTPS.txt
@@ -99,7 +98,7 @@ scan() {
     then
       echo -e ">> Checking open ports with \e[36mMasscan\e[0m"
       ## LAUNCH MASSCAN
-      masscan -p1-65535 -iL $ResultsPath/$domain/IPs.txt --rate=1000 -oJ $ResultsPath/$domain/masscan.json
+      masscan -p1-65535 -iL $ResultsPath/$domain/IPs.txt --rate=1000 -oJ $ResultsPath/$domain/masscan.json > /dev/null 2>&1
     fi
 
     ## CHECK WAF WITH WAFW00F
@@ -120,11 +119,11 @@ scan() {
     sort $ResultsPath/$domain/tmp3.txt | uniq > $ResultsPath/$domain/LinkFinder.txt
     rm $ResultsPath/$domain/tmp.txt $ResultsPath/$domain/tmp2.txt $ResultsPath/$domain/tmp3.txt
 
-    ## LAUNCH AQUATONE
-    echo -e ">> Launch \e[36mAquatone\e[0m scan"
-    cat $ResultsPath/$domain/urlsHTTPS.txt | $ToolsDIR/Aquatone/Aquatone -out $ResultsPath/$domain/AquatoneHTTPS/ -ports $AquatonePorts -save-body false > /dev/null 2>&1
-    cat $ResultsPath/$domain/urlsHTTP.txt | $ToolsDIR/Aquatone/Aquatone -out $ResultsPath/$domain/AquatoneHTTP/ -ports $AquatonePorts -save-body false > /dev/null 2>&1
-    rm $ResultsPath/$domain/urlsHTTPS.txt $ResultsPath/$domain/urlsHTTP.txt
+    ## SCREENSHOT WITH GOWITNESS
+    echo -e ">> Screenshot with \e[36mGoWitness\e[0m"
+    mkdir $ResultsPath/$domain/Screenshots
+    $ToolsDIR/GoWitness file --source=$ResultsPath/$domain/urlsHTTP.txt --destination "$ResultsPath/$domain/Screenshots" > /dev/null 2>&1
+
 
     ## CHECKING FOR CORS MISCONFIGURATION
     echo -e ">> Checking CORS misconfiguration with \e[36mCORSTest\e[0m"

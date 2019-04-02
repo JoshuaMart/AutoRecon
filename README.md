@@ -7,11 +7,11 @@
 - Check for TakeOver with [Subjack](https://github.com/haccer/subjack) & [TkoSubs](https://github.com/anshumanbh/tko-subs)
 - Find JS files & find endpoints with [LinkFinder](https://github.com/GerbenJavado/LinkFinder)
 - WAF detection with [WafW00f](https://github.com/EnableSecurity/wafw00f)
-- Scan with [Aquatone](https://github.com/michenriksen/aquatone) 
+- Screenshot with [GoWitness](https://github.com/sensepost/gowitness) 
 - Check open ports with [Masscan](https://github.com/robertdavidgraham/masscan) 
-- Creation of an archive and upload with unique link on Transfer.sh
+- Creation of an archive and upload with unique link on [Transfer.sh](https://transfer.sh)
 
-![Workflow](https://image.noelshack.com/fichiers/2019/08/5/1550830954-autorecon.png)
+![Workflow](https://image.noelshack.com/fichiers/2019/14/2/1554204462-workflow.png)
 
 ## Installation
 - For the use of Aquatone, it is preferable to have a graphical interface on the server on which the script is executed
@@ -32,7 +32,6 @@ And the following variables on recon.sh :
 ```bash
 ToolsDIR="/root/Recon/Tools" #Directory where tools was installed
 ResultsPath="/root/Recon" #Directory where you want scans results
-AquatonePorts="small" #Aquatone option, see his options
 TransferSH="https://transfer.sh" #Change this if you have you own transfer.sh
 subjackDebug="/root/go/src/github.com/haccer/subjack/fingerprints.json" #Subjack bug without this ...
 ```
@@ -45,12 +44,12 @@ Run installer :
 ```bash
 ./recon.sh -d domain.tld -a -u
 ```
-![screen](https://image.noelshack.com/fichiers/2019/11/5/1552645852-screen.png)
+![screen](https://image.noelshack.com/fichiers/2019/14/2/1554205323-screen.png)
 
 Options :
 ```bash
--d | --domain  (required) : Launch passive scan (Passive Amass, Aquatone, Subjack, TkoSubs)
--a | --active  (optional) : Launch active scans (Active Amass, Sublist3r LinkFinder, Aquatone)
+-d | --domain  (required) : Launch passive scan (Passive Amass, Subjack, TkoSubs)
+-a | --active  (optional) : Launch active scans (Active Amass, Sublist3r LinkFinder, GoWitness)
 -m | --masscan (optional) : Launch masscan (Can be very long & very aggressive ...)
 -u | --upload  (optional) : Upload archive on Transfer.sh
 ```

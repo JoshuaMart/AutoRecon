@@ -24,12 +24,11 @@ cc  -O3 -std=c11 -DHAVE_EPOLL -DHAVE_SYSINFO -Wall -fstack-protector-strong $Too
 git clone https://github.com/aboul3la/Sublist3r.git $ToolsDIR/Sublist3r
 pip3 install -r $ToolsDIR/Sublist3r/requirements.txt
 
-## Install Aquatone
+## Install GoWitness
 apt-get install chromium -y
-wget https://github.com/michenriksen/aquatone/releases/download/v1.4.3/aquatone_linux_amd64_1.4.3.zip
-unzip aquatone_linux_amd64_1.4.3.zip -d $ToolsDIR/Aquatone
-rm aquatone_linux_amd64_1.4.3.zip
-mv $ToolsDIR/Aquatone/aquatone $ToolsDIR/Aquatone/Aquatone
+wget https://github.com/sensepost/gowitness/releases/download/1.0.8/gowitness-linux-amd64
+mv gowitness-linux-amd64 $ToolsDIR/GoWitness
+chmod +x $ToolsDIR/GoWitness
 
 ## Install Subjack
 go get github.com/haccer/subjack
