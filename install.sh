@@ -10,7 +10,7 @@ pip2 install jsbeautifier
 mkdir -p $ToolsDIR
 
 ## Install AMASS
-wget https://github.com/OWASP/Amass/releases/download/2.9.4/amass_2.9.4_linux_amd64.zip
+wget https://github.com/OWASP/Amass/releases/download/2.9.9/amass_2.9.9_linux_amd64.zip
 unzip amass_2.9.4_linux_amd64.zip -d $ToolsDIR/
 rm amass_2.9.4_linux_amd64.zip
 mv $ToolsDIR/amass_2.9.4_linux_amd64 $ToolsDIR/Amass
