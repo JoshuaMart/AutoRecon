@@ -39,14 +39,15 @@ scan() {
 
   ## ENUM SUB-DOMAINS
   echo -e ">> Passive subdomains enumeration with \e[36mAmass\e[0m, \e[36mCertspotter\e[0m & \e[36mCrt.sh\e[0m"
-  $ToolsDIR/Amass/amass -passive -d $domain -o $ResultsPath/$domain/passive.txt > /dev/null 2>&1
+  # amass enum -active -w top110K.txt -brute -d apps.dev.jupiterone.io
+  $ToolsDIR/Amass/amass enum -passive -d $domain -o $ResultsPath/$domain/passive.txt > /dev/null 2>&1
   curl -s https://certspotter.com/api/v0/certs\?domain\=$domain | jq '.[].dns_names[]' | sed 's/\"//g' | sed 's/\*\.//g' | sort | uniq >> $ResultsPath/$domain/certspotter.txt
   curl -s "https://crt.sh/?q=%.$domain&output=json" | jq '.[].name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort | uniq >> $ResultsPath/$domain/crtsh.txt
   if [ -v active ] ## IF ACTIVE OPTION WAS PROVIDE
   then
     ## LAUNCH AMASS & SUBLIST3R ACTIVE SCAN
     echo -e ">> Active subdomains enumeration with \e[36mAmass\e[0m & \e[36mSublist3r\e[0m"
-    $ToolsDIR/Amass/amass -active -brute -min-for-recursive 0 -d $domain -o $ResultsPath/$domain/active.txt > /dev/null 2>&1
+    $ToolsDIR/Amass/amass -active -brute -min-for-recursive 1 -d $domain -o $ResultsPath/$domain/active.txt > /dev/null 2>&1
     python3 $ToolsDIR/Sublist3r/sublist3r.py -d $domain -o $ResultsPath/$domain/sublist3r.txt > /dev/null 2>&1
   fi
 
