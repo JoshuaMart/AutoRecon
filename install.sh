@@ -5,8 +5,8 @@ ToolsDIR="/root/Recon/Tools"
 GoPath="/root/go"
 
 ## SCRIPTS DEPENDANCES
-apt-get install git jq zip python3 python3-pip python3-dev unzip -y
-pip2 install jsbeautifier
+apt-get install git jq zip python3 python3-pip python3-dev unzip gcc -y
+pip2 install jsbeautifier soupsieve
 mkdir -p $ToolsDIR
 
 ## Install AMASS

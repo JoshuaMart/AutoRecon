@@ -47,7 +47,7 @@ scan() {
   then
     ## LAUNCH AMASS & SUBLIST3R ACTIVE SCAN
     echo -e ">> Active subdomains enumeration with \e[36mAmass\e[0m & \e[36mSublist3r\e[0m"
-    $ToolsDIR/Amass/amass -active -brute -min-for-recursive 1 -d $domain -o $ResultsPath/$domain/active.txt > /dev/null 2>&1
+    $ToolsDIR/Amass/amass enum -active -brute -min-for-recursive 1 -d $domain -o $ResultsPath/$domain/active.txt -p 80,443 -w $ToolsDIR/Amass/wordlists/subdomains-top1mil-110000.txt > /dev/null 2>&1
     python3 $ToolsDIR/Sublist3r/sublist3r.py -d $domain -o $ResultsPath/$domain/sublist3r.txt > /dev/null 2>&1
   fi
 
@@ -124,7 +124,6 @@ scan() {
     echo -e ">> Screenshot with \e[36mGoWitness\e[0m"
     mkdir $ResultsPath/$domain/Screenshots
     $ToolsDIR/GoWitness file --source=$ResultsPath/$domain/urlsHTTP.txt --destination "$ResultsPath/$domain/Screenshots" > /dev/null 2>&1
-
 
     ## CHECKING FOR CORS MISCONFIGURATION
     echo -e ">> Checking CORS misconfiguration with \e[36mCORSTest\e[0m"
