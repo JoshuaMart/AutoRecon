@@ -5,7 +5,7 @@ ToolsDIR="/root/Recon/Tools"
 GoPath="/root/go"
 
 ## SCRIPTS DEPENDANCES
-apt-get install git jq zip python3 python3-pip python3-dev -y
+apt-get install git jq zip python3 python3-pip python3-dev unzip -y
 pip2 install jsbeautifier
 mkdir -p $ToolsDIR
 
