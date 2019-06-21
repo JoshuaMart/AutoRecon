@@ -102,11 +102,6 @@ scan() {
     cat $ResultsPath/$domain/IP.txt | sort | uniq > $ResultsPath/$domain/IPs.txt
     rm $ResultsPath/$domain/IP.txt
 
-    ## CHECK WAF WITH WAFW00F
-    echo -e ">> Checking WAF with \e[36mWafW00f\e[0m"
-    cat $ResultsPath/$domain/urlsHTTPS.txt | while read rline; do wafw00f $rline >> $ResultsPath/$domain/WafW00f.txt; echo -e "-----------------------------------------------" >> $ResultsPath/$domain/WafW00f.txt
-    done
-
     ## SCREENSHOT WITH GOWITNESS
     echo -e ">> Screenshot with \e[36mGoWitness\e[0m"
     mkdir -p $ResultsPath/$domain/Screenshots/HTTP
