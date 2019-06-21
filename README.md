@@ -6,7 +6,7 @@
 - Combination of results, check with [MassDNS](https://github.com/blechschmidt/massdns)
 - Check for TakeOver with [Subjack](https://github.com/haccer/subjack) & [TkoSubs](https://github.com/anshumanbh/tko-subs)
 - Screenshot with [GoWitness](https://github.com/sensepost/gowitness) 
-- Checj CORS with [CORStest](https://github.com/RUB-NDS/CORStest)
+- Check CORS with [CORStest](https://github.com/RUB-NDS/CORStest)
 - Check open ports with [Masscan](https://github.com/robertdavidgraham/masscan) 
 - Creation of an archive and upload with unique link on [Transfer.sh](https://transfer.sh)
 
