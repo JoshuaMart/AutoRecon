@@ -26,9 +26,14 @@ pip3 install -r $ToolsDIR/Sublist3r/requirements.txt
 
 ## Install GoWitness
 apt-get install chromium -y
+go get -v -u github.com/golang/dep/cmd/dep
 wget https://github.com/sensepost/gowitness/releases/download/1.0.8/gowitness-linux-amd64
 mv gowitness-linux-amd64 $ToolsDIR/GoWitness
 chmod +x $ToolsDIR/GoWitness
+
+## Install Subfinder
+go get github.com/subfinder/subfinder
+cp $GoPath/bin/subfinder $ToolsDIR/Subfinder
 
 ## Install Subjack
 go get github.com/haccer/subjack
@@ -47,19 +52,8 @@ git clone https://github.com/anshumanbh/tko-subs.git $ToolsDIR/TkoSubs
 go build $ToolsDIR/TkoSubs/tko-subs.go
 mv tko-subs $ToolsDIR/TkoSubs/TkoSubs
 
-## Install DirSearch
-git clone https://github.com/maurosoria/dirsearch.git $ToolsDIR/DirSearch
-
 ## Install CORStest
 git clone https://github.com/RUB-NDS/CORStest.git $ToolsDIR/CORStest
-
-## Install LinkFinder
-git clone https://github.com/GerbenJavado/LinkFinder.git $ToolsDIR/LinkFinder
-cd $ToolsDIR/LinkFinder
-python setup.py install
-
-## Install WafW00F
-pip install wafw00f
 
 ## Install MassCan
 apt-get install masscan -y

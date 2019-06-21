@@ -15,8 +15,8 @@ die() {
 help() {
   banner
   echo -e "Usage : ./recon.sh -d domain.tld -a -u
-      -d | --domain  (required) : Launch passive scan (Passive Amass, Subjack, TkoSubs, CORStest)
-      -a | --active  (optional) : Launch active scans (Active Amass, Sublist3r LinkFinder, GoWitness)
+      -d | --domain  (required) : Launch passive scan (Passive Amass, CRT.sh, Certspotter, Subfinder, Subjack, TkoSubs, CORStest)
+      -a | --active  (optional) : Launch active scans (Active Amass, Sublist3r, GoWitness, CORStest)
       -m | --masscan (optional) : Launch masscan (Can be very long & very aggressive ...)
       -u | --upload  (optional) : Upload archive on Transfer.sh
   "
@@ -38,21 +38,28 @@ scan() {
   echo -e "Scan is in \e[31mprogress\e[0m, take a coffee"
 
   ## ENUM SUB-DOMAINS
-  echo -e ">> Passive subdomains enumeration with \e[36mAmass\e[0m, \e[36mCertspotter\e[0m & \e[36mCrt.sh\e[0m"
-  # amass enum -active -w top110K.txt -brute -d apps.dev.jupiterone.io
+  echo -e ">> Passive subdomains enumeration with \e[36mAmass\e[0m, \e[36mCertspotter\e[0m, \e[36mSubfinder\e[0m & \e[36mCrt.sh\e[0m"
+
+  # LAUNCH AMASS (PASSIVE)
   $ToolsDIR/Amass/amass enum -passive -d $domain -o $ResultsPath/$domain/passive.txt > /dev/null 2>&1
+
+  ## ASK DOMAINS FROM CRT.SH & CERTSPOTTER
   curl -s https://certspotter.com/api/v0/certs\?domain\=$domain | jq '.[].dns_names[]' | sed 's/\"//g' | sed 's/\*\.//g' | sort | uniq >> $ResultsPath/$domain/certspotter.txt
   curl -s "https://crt.sh/?q=%.$domain&output=json" | jq '.[].name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort | uniq >> $ResultsPath/$domain/crtsh.txt
+
+  ## LAUNCH SUBFINDER
+  $ToolsDIR/Subfinder -d $domain -o $ResultsPath/$domain/subfinder.txt > /dev/null 2>&1
+
   if [ -v active ] ## IF ACTIVE OPTION WAS PROVIDE
   then
-    ## LAUNCH AMASS & SUBLIST3R ACTIVE SCAN
+    ## LAUNCH AMASS (ACTIVE) & SUBLIST3R ACTIVE SCAN
     echo -e ">> Active subdomains enumeration with \e[36mAmass\e[0m & \e[36mSublist3r\e[0m"
     $ToolsDIR/Amass/amass enum -active -brute -min-for-recursive 1 -d $domain -o $ResultsPath/$domain/active.txt -p 80,443 -w $ToolsDIR/Amass/wordlists/subdomains-top1mil-110000.txt > /dev/null 2>&1
     python3 $ToolsDIR/Sublist3r/sublist3r.py -d $domain -o $ResultsPath/$domain/sublist3r.txt > /dev/null 2>&1
   fi
 
   ## COMBINE RESULTS OF AMASS, SUBLIST3R, CRTSH AND CERTSPOTTER
-  cat $ResultsPath/$domain/passive.txt $ResultsPath/$domain/certspotter.txt $ResultsPath/$domain/crtsh.txt > $ResultsPath/$domain/$domain.txt
+  cat $ResultsPath/$domain/passive.txt $ResultsPath/$domain/certspotter.txt $ResultsPath/$domain/crtsh.txt $ResultsPath/$domain/subfinder.txt > $ResultsPath/$domain/$domain.txt
   rm $ResultsPath/$domain/passive.txt $ResultsPath/$domain/certspotter.txt $ResultsPath/$domain/crtsh.txt
   if [ -v active ] ## IF ACTIVE OPTION WAS PROVIDE
   then
@@ -95,40 +102,32 @@ scan() {
     cat $ResultsPath/$domain/IP.txt | sort | uniq > $ResultsPath/$domain/IPs.txt
     rm $ResultsPath/$domain/IP.txt
 
-    if [ -v masscan ]
-    then
-      echo -e ">> Checking open ports with \e[36mMasscan\e[0m"
-      ## LAUNCH MASSCAN
-      masscan -p1-65535 -iL $ResultsPath/$domain/IPs.txt --rate=1000 -oJ $ResultsPath/$domain/masscan.json > /dev/null 2>&1
-    fi
-
     ## CHECK WAF WITH WAFW00F
     echo -e ">> Checking WAF with \e[36mWafW00f\e[0m"
     cat $ResultsPath/$domain/urlsHTTPS.txt | while read rline; do wafw00f $rline >> $ResultsPath/$domain/WafW00f.txt; echo -e "-----------------------------------------------" >> $ResultsPath/$domain/WafW00f.txt
     done
 
-    ## CHECK JS URLS WITH LINKFINDER
-    echo -e ">> Checking JS files with \e[36mLinkFinder\e[0m"
-    cat $ResultsPath/$domain/urlsHTTPS.txt | while read rline; do echo -e "\n>> LinkFinder for $rline :" >> LinkFinder.txt; python2 $ToolsDIR/LinkFinder/linkfinder.py -i $rline -o cli >> $ResultsPath/$domain/tmp.txt
-    done
-    cat $ResultsPath/$domain/urlsHTTP.txt | while read rline; do echo -e "\n>> LinkFinder for $rline :" >> LinkFinder.txt; python2 $ToolsDIR/LinkFinder/linkfinder.py -i $rline -o cli >> $ResultsPath/$domain/tmp.txt
-    done
-
-    ## CLEAN LINKFINDER RESULTS
-    sed 's/\https:\/\// /g' $ResultsPath/$domain/tmp.txt > $ResultsPath/$domain/tmp2.txt
-    sed 's/http:\/\// /g' $ResultsPath/$domain/tmp2.txt > $ResultsPath/$domain/tmp3.txt
-    sort $ResultsPath/$domain/tmp3.txt | uniq > $ResultsPath/$domain/LinkFinder.txt
-    rm $ResultsPath/$domain/tmp.txt $ResultsPath/$domain/tmp2.txt $ResultsPath/$domain/tmp3.txt
-
     ## SCREENSHOT WITH GOWITNESS
     echo -e ">> Screenshot with \e[36mGoWitness\e[0m"
-    mkdir $ResultsPath/$domain/Screenshots
-    $ToolsDIR/GoWitness file --source=$ResultsPath/$domain/urlsHTTP.txt --destination "$ResultsPath/$domain/Screenshots" > /dev/null 2>&1
+    mkdir -p $ResultsPath/$domain/Screenshots/HTTP
+    mkdir -p $ResultsPath/$domain/Screenshots/HTTPS
+    $ToolsDIR/GoWitness file --source=$ResultsPath/$domain/urlsHTTP.txt --destination "$ResultsPath/$domain/Screenshots/HTTP" > /dev/null 2>&1
+    $ToolsDIR/GoWitness file --source=$ResultsPath/$domain/urlsHTTP.txt --destination "$ResultsPath/$domain/Screenshots/HTTP" > /dev/null 2>&1
 
     ## CHECKING FOR CORS MISCONFIGURATION
     echo -e ">> Checking CORS misconfiguration with \e[36mCORSTest\e[0m"
     python2 $ToolsDIR/CORStest/corstest.py -q $ResultsPath/$domain/domains.txt -v >> $ResultsPath/$domain/CORS.txt
+
+    ## LAUNCH MASSCAN
+    if [ -v masscan ]
+    then
+      echo -e ">> Checking open ports with \e[36mMasscan\e[0m"
+      masscan -p1-65535 -iL $ResultsPath/$domain/IPs.txt --rate=1000 -oJ $ResultsPath/$domain/masscan.json > /dev/null 2>&1
+    fi
   fi
+
+  ## DIRECTORY CLEANING
+  rm $ResultsPath/$domain/urlsHTTP.txt $ResultsPath/$domain/urlsHTTPS.txt $ResultsPath/$domain/massdns.txt
 
   ## CREATE AN ARCHIVE
   tar czvf $ResultsPath/$domain/$domain.tar.gz $ResultsPath/$domain/* > /dev/null 2>&1
