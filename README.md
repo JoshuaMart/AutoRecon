@@ -10,7 +10,7 @@
 - Check open ports with [Masscan](https://github.com/robertdavidgraham/masscan) 
 - Creation of an archive and upload with unique link on [Transfer.sh](https://transfer.sh)
 
-![Workflow](http://image.noelshack.com/fichiers/2019/25/4/1561050522-autoreconworkflow.png)
+![Workflow](http://image.noelshack.com/fichiers/2019/26/1/1561365532-autoreconworkflow.png)
 
 ## Installation
 - Installation tested on Debian 9 / Kali 2019.1
