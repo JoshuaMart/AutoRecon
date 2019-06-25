@@ -119,10 +119,13 @@ scan() {
       echo -e ">> Checking open ports with \e[36mMasscan\e[0m"
       masscan -p1-65535 -iL $ResultsPath/$domain/IPs.txt --rate=1000 -oJ $ResultsPath/$domain/masscan.json > /dev/null 2>&1
     fi
+
+    ## DIRECTORY CLEANING
+    rm $ResultsPath/$domain/urlsHTTP.txt $ResultsPath/$domain/urlsHTTPS.txt 
   fi
 
   ## DIRECTORY CLEANING
-  rm $ResultsPath/$domain/urlsHTTP.txt $ResultsPath/$domain/urlsHTTPS.txt $ResultsPath/$domain/massdns.txt
+  rm $ResultsPath/$domain/massdns.txt
 
   ## CREATE AN ARCHIVE
   tar czvf $ResultsPath/$domain/$domain.tar.gz $ResultsPath/$domain/* > /dev/null 2>&1
