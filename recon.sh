@@ -107,7 +107,7 @@ scan() {
     mkdir -p $ResultsPath/$domain/Screenshots/HTTP
     mkdir -p $ResultsPath/$domain/Screenshots/HTTPS
     $ToolsDIR/GoWitness file --source=$ResultsPath/$domain/urlsHTTP.txt --destination "$ResultsPath/$domain/Screenshots/HTTP" > /dev/null 2>&1
-    $ToolsDIR/GoWitness file --source=$ResultsPath/$domain/urlsHTTP.txt --destination "$ResultsPath/$domain/Screenshots/HTTP" > /dev/null 2>&1
+    $ToolsDIR/GoWitness file --source=$ResultsPath/$domain/urlsHTTPS.txt --destination "$ResultsPath/$domain/Screenshots/HTTPS" > /dev/null 2>&1
 
     ## CHECKING FOR CORS MISCONFIGURATION
     echo -e ">> Checking CORS misconfiguration with \e[36mCORSTest\e[0m"
