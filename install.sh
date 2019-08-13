@@ -10,10 +10,10 @@ pip2 install jsbeautifier soupsieve
 mkdir -p $ToolsDIR
 
 ## Install AMASS
-wget https://github.com/OWASP/Amass/releases/download/3.0.18/amass_3.0.18_linux_amd64.zip
-unzip amass_3.0.18_linux_amd64.zip -d $ToolsDIR/
-rm amass_3.0.18_linux_amd64.zip
-mv $ToolsDIR/amass_3.0.18_linux_amd64 $ToolsDIR/Amass
+wget https://github.com/OWASP/Amass/releases/download/3.0.27/amass_3.0.27_linux_amd64.zip
+unzip amass_3.0.27_linux_amd64.zip -d $ToolsDIR/
+rm amass_3.0.27_linux_amd64.zip
+mv $ToolsDIR/amass_3.0.27_linux_amd64 $ToolsDIR/Amass
 
 ## Install MassDNS
 git clone https://github.com/blechschmidt/massdns.git $ToolsDIR/MassDNS
