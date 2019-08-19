@@ -18,6 +18,7 @@ help() {
       -d | --domain  (required) : Launch passive scan (Passive Amass, CRT.sh, Certspotter, Subfinder, Subjack, TkoSubs, CORStest)
       -a | --active  (optional) : Launch active scans (Active Amass, Sublist3r, GoWitness, CORStest)
       -m | --masscan (optional) : Launch masscan (Can be very long & very aggressive ...)
+      -s | --screen  (optional) : Take screenshots with GoWitness (can be very long)
       -u | --upload  (optional) : Upload archive on Transfer.sh
   "
 }
@@ -101,13 +102,17 @@ scan() {
     done
     cat $ResultsPath/$domain/IP.txt | sort | uniq > $ResultsPath/$domain/IPs.txt
     rm $ResultsPath/$domain/IP.txt
+  fi
 
-    ## SCREENSHOT WITH GOWITNESS
+  if [ -v screen ] ## IF ACTIVE OPTION WAS PROVIDE
+  then
+        ## SCREENSHOT WITH GOWITNESS
     echo -e ">> Screenshot with \e[36mGoWitness\e[0m"
     mkdir -p $ResultsPath/$domain/Screenshots/HTTP
     mkdir -p $ResultsPath/$domain/Screenshots/HTTPS
     $ToolsDIR/GoWitness file --source=$ResultsPath/$domain/urlsHTTP.txt --destination "$ResultsPath/$domain/Screenshots/HTTP" > /dev/null 2>&1
     $ToolsDIR/GoWitness file --source=$ResultsPath/$domain/urlsHTTPS.txt --destination "$ResultsPath/$domain/Screenshots/HTTPS" > /dev/null 2>&1
+  fi
 
     ## CHECKING FOR CORS MISCONFIGURATION
     echo -e ">> Checking CORS misconfiguration with \e[36mCORSTest\e[0m"
@@ -122,7 +127,6 @@ scan() {
 
     ## DIRECTORY CLEANING
     rm $ResultsPath/$domain/urlsHTTP.txt $ResultsPath/$domain/urlsHTTPS.txt 
-  fi
 
   ## DIRECTORY CLEANING
   rm $ResultsPath/$domain/massdns.txt
@@ -165,6 +169,9 @@ while :; do
             ;;
         -m|--masscan)
             masscan=true
+            ;;
+        -s|--screen)
+            screen=true
             ;;
         -u|--upload)
             upload=true

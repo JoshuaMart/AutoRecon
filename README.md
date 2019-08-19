@@ -10,11 +10,10 @@
 - Check open ports with [Masscan](https://github.com/robertdavidgraham/masscan) 
 - Creation of an archive and upload with unique link on [Transfer.sh](https://transfer.sh)
 
-![Workflow](http://image.noelshack.com/fichiers/2019/26/1/1561365532-autoreconworkflow.png)
+![Workflow](http://image.noelshack.com/fichiers/2019/34/1/1566214999-autoreconworkflow.png)
 
 ## Installation
-- Installation tested on Debian 9 / Kali 2019.1
-- Recon tested on Debian 9 / Ubuntu 18.04 / 2019.1
+- Installation & Recon tested on Debian 10 / Kali 2019.2
 
 Requierement : [Golang](https://golang.org/doc/install)
 ```bash
@@ -46,16 +45,17 @@ nano /root/.config/subfinder/config.json
 ## Usage
 
 ```bash
-./recon.sh -d domain.tld -a -u
+./recon.sh -d domain.tld -a -m -s -u
 ```
-![screen](http://image.noelshack.com/fichiers/2019/25/5/1561100782-autorecon.png)
+![screen](http://image.noelshack.com/fichiers/2019/34/1/1566214999-autorecon.png)
 
 Options :
 ```bash
--d | --domain  (required) : Launch passive scan (Passive Amass, CRT.sh, Certspotter, Subfinder, Subjack, TkoSubs)
+-d | --domain  (required) : Launch passive scan (Passive Amass, CRT.sh, Certspotter, Subfinder, Subjack, TkoSubs, CORStest)
 -a | --active  (optional) : Launch active scans (Active Amass, Sublist3r, GoWitness, CORStest)
 -m | --masscan (optional) : Launch masscan (Can be very long & very aggressive ...)
+-s | --screen  (optional) : Take screenshots with GoWitness (can be very long)
 -u | --upload  (optional) : Upload archive on Transfer.sh
 ```
 
-**If your internet connection crash with Masscan options, change --rate options to 100 at line 102**
+**If your internet connection crash with Masscan options, change --rate options to 100 at line 125**
