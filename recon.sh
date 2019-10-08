@@ -1,10 +1,9 @@
 #!/bin/bash
 
 ## VARIABLES
-ToolsDIR="/root/Recon/Tools"
 ResultsPath="/root/Recon"
-TransferSH="https://transfer.sh"
-subjackDebug="/root/go/src/github.com/haccer/subjack/fingerprints.json"
+HOOK="https://hooks.slack.com/services/XXXX/XXXXX"
+ports="80 81 300 443 591 593 832 981 1010 1311 2082 2087 2095 2096 2480 3000 3128 3333 4243 4567 4711 4712 4993 5000 5104 5108 5800 6543 7000 7396 7474 8000 8001 8008 8014 8042 8069 8080 8081 8088 8090 8091 8118 8123 8172 8222 8243 8280 8281 8333 8443 8500 8834 8880 8888 8983 9000 9043 9060 9080 9090 9091 9200 9443 9800 9981 12443 16080 18091 18092 20720 28017"
 
 ## FUNCTION
 die() {
@@ -14,12 +13,9 @@ die() {
 
 help() {
   banner
-  echo -e "Usage : ./recon.sh -d domain.tld -a -u
-      -d | --domain  (required) : Launch passive scan (Passive Amass, CRT.sh, Certspotter, Subfinder, Subjack, TkoSubs, CORStest)
-      -a | --active  (optional) : Launch active scans (Active Amass, Sublist3r, GoWitness, CORStest)
-      -m | --masscan (optional) : Launch masscan (Can be very long & very aggressive ...)
-      -s | --screen  (optional) : Take screenshots with GoWitness (can be very long)
-      -u | --upload  (optional) : Upload archive on Transfer.sh
+  echo -e "Usage : ./recon.sh -d domain.tld -m
+      -d | --domain  (required) : Launch passive scan (Amass & DnsGen)
+      -m | --monitor (optional) : Launch monitoring (Port scanning & Slack alerting)
   "
 }
 
@@ -34,117 +30,82 @@ banner() {
  "
 }
 
+portisopen(){
+  timeout 0.5s /bin/bash -c "echo EOF > /dev/tcp/$p/$2" 2>/dev/null||(echo closed >/dev/stderr; return 1 );
+}
+
 scan() {
   banner
-  echo -e "Scan is in \e[31mprogress\e[0m, take a coffee"
+  echo -e "Recon is in \e[31mprogress\e[0m, take a coffee"
 
   ## ENUM SUB-DOMAINS
-  echo -e ">> Passive subdomains enumeration with \e[36mAmass\e[0m, \e[36mCertspotter\e[0m, \e[36mSubfinder\e[0m & \e[36mCrt.sh\e[0m"
+  echo -e ">> \e[36mAmass\e[0m is in progress"
 
-  # LAUNCH AMASS (PASSIVE)
-  $ToolsDIR/Amass/amass enum -passive -d $domain -o $ResultsPath/$domain/passive.txt > /dev/null 2>&1
+  ## LAUNCH AMASS (PASSIVE)
+  wget https://raw.githubusercontent.com/danielmiessler/SecLists/master/Discovery/DNS/subdomains-top1million-110000.txt -P $ResultsPath/$domain/ > /dev/null 2>&1
+  amass enum -passive -d $domain -o $ResultsPath/$domain/passive.txt > /dev/null 2>&1
+  amass enum -active -brute -min-for-recursive 1 -d $domain -o $ResultsPath/$domain/active.txt -p 80,443 -w $ResultsPath/$domain/subdomains-top1million-110000.txt > /dev/null 2>&1
 
-  ## ASK DOMAINS FROM CRT.SH & CERTSPOTTER
-  curl -s https://certspotter.com/api/v0/certs\?domain\=$domain | jq '.[].dns_names[]' | sed 's/\"//g' | sed 's/\*\.//g' | sort | uniq >> $ResultsPath/$domain/certspotter.txt
-  curl -s "https://crt.sh/?q=%.$domain&output=json" | jq '.[].name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort | uniq >> $ResultsPath/$domain/crtsh.txt
+  ## COMBINE RESULTS OF AMASS PASSIVE & ACTIVE
+  cat $ResultsPath/$domain/passive.txt $ResultsPath/$domain/active.txt > $ResultsPath/$domain/domain.txt
 
-  ## LAUNCH SUBFINDER
-  $ToolsDIR/Subfinder -d $domain -o $ResultsPath/$domain/subfinder.txt > /dev/null 2>&1
-
-  if [ -v active ] ## IF ACTIVE OPTION WAS PROVIDE
-  then
-    ## LAUNCH AMASS (ACTIVE) & SUBLIST3R ACTIVE SCAN
-    echo -e ">> Active subdomains enumeration with \e[36mAmass\e[0m & \e[36mSublist3r\e[0m"
-    $ToolsDIR/Amass/amass enum -active -brute -min-for-recursive 1 -d $domain -o $ResultsPath/$domain/active.txt -p 80,443 -w $ToolsDIR/Amass/wordlists/subdomains-top1mil-110000.txt > /dev/null 2>&1
-    python3 $ToolsDIR/Sublist3r/sublist3r.py -d $domain -o $ResultsPath/$domain/sublist3r.txt > /dev/null 2>&1
-  fi
-
-  ## COMBINE RESULTS OF AMASS, SUBLIST3R, CRTSH AND CERTSPOTTER
-  cat $ResultsPath/$domain/passive.txt $ResultsPath/$domain/certspotter.txt $ResultsPath/$domain/crtsh.txt $ResultsPath/$domain/subfinder.txt > $ResultsPath/$domain/$domain.txt
-  rm $ResultsPath/$domain/passive.txt $ResultsPath/$domain/certspotter.txt $ResultsPath/$domain/crtsh.txt
-  if [ -v active ] ## IF ACTIVE OPTION WAS PROVIDE
-  then
-    cat $ResultsPath/$domain/active.txt $ResultsPath/$domain/sublist3r.txt >> $ResultsPath/$domain/$domain.txt
-    rm $ResultsPath/$domain/active.txt $ResultsPath/$domain/sublist3r.txt
-  fi
+  ## LAUNCH DNSGEN
+  cat $ResultsPath/$domain/domain.txt | dnsgen - >> $ResultsPath/$domain/domain.txt
 
   ## SORTS AND REMOVES DUPLICATES
-  sort $ResultsPath/$domain/$domain.txt | uniq > $ResultsPath/$domain/domains.txt
-  rm $ResultsPath/$domain/$domain.txt
+  sort $ResultsPath/$domain/domain.txt | uniq > $ResultsPath/$domain/domains.txt
 
   ## CHECK RESULTS WITH MASSDNS
-  echo -e ">> Check results with \e[36mMassDNS\e[0m"
-  printf "8.8.8.8\n1.1.1.1" > $ToolsDIR/MassDNS/resolvers.txt
-  $ToolsDIR/MassDNS/bin/massdns -r $ToolsDIR/MassDNS/resolvers.txt -t A -o S -w $ResultsPath/$domain/massdns.txt $ResultsPath/$domain/domains.txt > /dev/null 2>&1
-  rm $ResultsPath/$domain/domains.txt
+  echo -e ">> \e[36mMassDNS\e[0m is in progress"
+  printf "8.8.8.8\n1.1.1.1" > $ResultsPath/resolvers.txt
+  massdns -r $ResultsPath/resolvers.txt -t A -o S -w $ResultsPath/$domain/massdns.txt $ResultsPath/$domain/domains.txt > /dev/null 2>&1 
 
   ## CLEAN MASSDNS RESULTS
   grep -Po "([A-Za-z0-9]).*$domain" $ResultsPath/$domain/massdns.txt > $ResultsPath/$domain/tmp_domains.txt
   sed 's/\..CNAME.*/ /g' $ResultsPath/$domain/tmp_domains.txt > $ResultsPath/$domain/tmp2_domains.txt
-  sed 's/CNAME.*/ /g' $ResultsPath/$domain/tmp2_domains.txt | sort | uniq > $ResultsPath/$domain/domains.txt
-  rm $ResultsPath/$domain/tmp_domains.txt $ResultsPath/$domain/tmp2_domains.txt
+  sed 's/CNAME.*/ /g' $ResultsPath/$domain/tmp2_domains.txt | sort | uniq > $ResultsPath/$domain/domains_$(date +%F).txt
+  
+  ## LAUNCH AQUATONE
+  echo -e ">> \e[36mAquatone\e[0m is in progress"
+  mkdir $ResultsPath/$domain/Aquatone
+  cd $ResultsPath/$domain/Aquatone
+  cat ../domains_$(date +%F).txt | aquatone -chrome-path /snap/bin/chromium -ports xlarge > /dev/null 2>&1
 
-  ## CHECK TAKEOVER WITH SUBJACK AND TKOSUBS
-  echo -e ">> Checking takeover with \e[36mSubjack\e[0m & \e[36mTkoSubs\e[0m"
-  $ToolsDIR/Subjack -w $ResultsPath/$domain/domains.txt -t 100 -o $ResultsPath/$domain/Subjack.txt -c $subjackDebug -v -ssl > /dev/null 2>&1
-  $ToolsDIR/TkoSubs/TkoSubs -domains=$ResultsPath/$domain/domains.txt -data=$ToolsDIR/TkoSubs/providers-data.csv -output=$ResultsPath/$domain/TkoSubs.csv > /dev/null 2>&1
+  ## REMOVE USELESS FILES
+  rm $ResultsPath/$domain/passive.txt $ResultsPath/$domain/active.txt $ResultsPath/$domain/subdomains-top1million-110000.txt $ResultsPath/resolvers.txt
+  rm $ResultsPath/$domain/tmp_domains.txt $ResultsPath/$domain/tmp2_domains.txt $ResultsPath/$domain/domains.txt $ResultsPath/$domain/massdns.txt
 
-  if [ -v active ] ## IF ACTIVE OPTION WAS PROVIDE
+  if [ -v monitor ] ## IF MONITOR OPTION WAS PROVIDE
   then
-    ## CREATE  FILES WITH COMPLETE URL FOR LINKFINDER AND GoWitness
-    sed -e 's/^/https:\/\//' $ResultsPath/$domain/domains.txt > $ResultsPath/$domain/urlsHTTPS.txt
-    sed -e 's/^/http:\/\//' $ResultsPath/$domain/domains.txt > $ResultsPath/$domain/urlsHTTP.txt
-    sed -i s/' '\$//g $ResultsPath/$domain/urlsHTTPS.txt
-    sed -i s/' '\$//g $ResultsPath/$domain/urlsHTTP.txt
-
-    ## GET IP OF EACH DOMAINS
-    cat $ResultsPath/$domain/domains.txt | while read rline; do host $rline | grep " has address "|cut -d" " -f4 >> $ResultsPath/$domain/IP.txt
-    done
-    cat $ResultsPath/$domain/IP.txt | sort | uniq > $ResultsPath/$domain/IPs.txt
-    rm $ResultsPath/$domain/IP.txt
-  fi
-
-  if [ -v screen ] ## IF ACTIVE OPTION WAS PROVIDE
-  then
-        ## SCREENSHOT WITH GOWITNESS
-    echo -e ">> Screenshot with \e[36mGoWitness\e[0m"
-    mkdir -p $ResultsPath/$domain/Screenshots/HTTP
-    mkdir -p $ResultsPath/$domain/Screenshots/HTTPS
-    $ToolsDIR/GoWitness file --source=$ResultsPath/$domain/urlsHTTP.txt --destination "$ResultsPath/$domain/Screenshots/HTTP" > /dev/null 2>&1
-    $ToolsDIR/GoWitness file --source=$ResultsPath/$domain/urlsHTTPS.txt --destination "$ResultsPath/$domain/Screenshots/HTTPS" > /dev/null 2>&1
-  fi
-
-    ## CHECKING FOR CORS MISCONFIGURATION
-    echo -e ">> Checking CORS misconfiguration with \e[36mCORSTest\e[0m"
-    python2 $ToolsDIR/CORStest/corstest.py -q $ResultsPath/$domain/domains.txt -v >> $ResultsPath/$domain/CORS.txt
-
-    ## LAUNCH MASSCAN
-    if [ -v masscan ]
-    then
-      echo -e ">> Checking open ports with \e[36mMasscan\e[0m"
-      masscan -p1-65535 -iL $ResultsPath/$domain/IPs.txt --rate=1000 -oJ $ResultsPath/$domain/masscan.json > /dev/null 2>&1
+    echo -e ">> \e[36mMonitoring\e[0m process is in progress"
+    if [ ! -d "$ResultsPath/$domain/monitor" ];then
+      mkdir $ResultsPath/$domain/monitor
     fi
 
-    ## DIRECTORY CLEANING
-    rm $ResultsPath/$domain/urlsHTTP.txt $ResultsPath/$domain/urlsHTTPS.txt 
+    cp $ResultsPath/$domain/domains_$(date +%F).txt $ResultsPath/$domain/monitor/domains_new.txt
+    
+    if [ -f "$ResultsPath/$domain/monitor/domains_old.txt" ]; then
+      diff $ResultsPath/$domain/monitor/domains_old.txt $ResultsPath/$domain/monitor/domains_new.txt > $ResultsPath/$domain/monitor/changes.txt
+      cat $ResultsPath/$domain/monitor/changes.txt | grep '> ' | sed 's/> //g' > $ResultsPath/$domain/monitor/tmp.txt
 
-  ## DIRECTORY CLEANING
-  rm $ResultsPath/$domain/massdns.txt
+      while read p; do
+        for port in $ports ; do portisopen $p $port 2>/dev/null && (echo "$port";) >> $ResultsPath/$domain/monitor/open_ports.txt;done
+        cat $ResultsPath/$domain/monitor/open_ports.txt | tr '\n' ',' > $ResultsPath/$domain/monitor/open_ports2.txt
+        ## SEND SLACK ALERT
+        MSG="{\"text\":\"New subdomains $p with open ports :"$(cat $ResultsPath/$domain/monitor/open_ports2.txt)"\"}"
+        curl -X POST -H 'Content-type: application/json' --data "$MSG" $HOOK
 
-  ## CREATE AN ARCHIVE
-  tar czvf $ResultsPath/$domain/$domain.tar.gz $ResultsPath/$domain/* > /dev/null 2>&1
-
-  echo -e "\n=========== Scan is \e[32mfinish\e[0m ==========="
-  echo -e "Archive of scan was create, path : \e[36m$ResultsPath/$domain/$domain.tar.gz\e[0m"
-
-  if [ -v upload ] ## IF UPLOAD OPTION WAS PROVIDE
-  then
-    link=$(curl -H "Max-Downloads: 1" -H "Max-Days: 1" --upload-file $ResultsPath/$domain/$domain.tar.gz $TransferSH/$domain.tar.gz 2>&1 | grep "$TransferSH/.*$domain.tar.gz" -o)
-    rm $ResultsPath/$domain/$domain.tar.gz
-    echo -e "Download link of your report : \e[36m$link\e[0m"
+        rm $ResultsPath/$domain/monitor/open_ports.txt $ResultsPath/$domain/monitor/open_ports2.txt
+      done <$ResultsPath/$domain/monitor/tmp.txt
+      ## RM OLD FILE & MOVE NEW FILE (THIS SCAN) TO OLD (FOR NEXT COMPARISON)
+      rm $ResultsPath/$domain/monitor/tmp.txt $ResultsPath/$domain/monitor/changes.txt $ResultsPath/$domain/monitor/domains_old.txt
+      mv $ResultsPath/$domain/monitor/domains_new.txt $ResultsPath/$domain/monitor/domains_old.txt
+    else ## CASE IF IT'S THE FIRST SCAN WITH "-m" OPTION, MOVE NEW FILE (THIS SCAN) TO OLD (FOR NEXT COMPARISON)
+      mv $ResultsPath/$domain/monitor/domains_new.txt $ResultsPath/$domain/monitor/domains_old.txt
+    fi
   fi
-
-   echo -e "======================================\n"
+ 
+  echo -e "\n=========== Recon is \e[32mfinish\e[0m ==========="
 }
 
 while :; do
@@ -164,17 +125,8 @@ while :; do
         --domain=)
             die 'ERROR: "--domain" requires a non-empty option argument.'
             ;;
-        -a|--active)
-            active=true
-            ;;
-        -m|--masscan)
-            masscan=true
-            ;;
-        -s|--screen)
-            screen=true
-            ;;
-        -u|--upload)
-            upload=true
+        -m|--monitor)
+            monitor=true
             ;;
         --)
             shift
@@ -198,15 +150,8 @@ else
   if [ ! -d "$ResultsPath/$domain" ];then
     mkdir $ResultsPath/$domain
   else
-    while true; do
-        echo -e "The dir \e[36m$ResultsPath/$domain\e[0m already exists, delete ? [y/n]"
-        read -p ">> " yn
-        case $yn in
-            [Yy]* ) rm -r $ResultsPath/$domain; mkdir $ResultsPath/$domain; break;;
-            [Nn]* ) break;;
-            * ) echo "Please answer y or n.";;
-        esac
-    done
+    cd $ResultsPath/$domain/
+    ls | grep -v monitor | xargs rm -r
   fi
   scan
 fi
