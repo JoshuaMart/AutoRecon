@@ -1,7 +1,8 @@
 #!/bin/bash
 
 #Update & Upgrade
-apt-get update && upgrade -y
+apt-get update && apt-get upgrade -y
+rm README.md
 
 #Install requierements
 apt-get install python3 python3-pip unzip libldns-dev git snapd -y

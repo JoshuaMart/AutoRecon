@@ -36,7 +36,8 @@ Options :
 
 ![RunningScript](http://image.noelshack.com/fichiers/2019/41/2/1570533971-runningscript.png)
 
-![SlackAlert](http://image.noelshack.com/fichiers/2019/41/2/1570533971-slackalert.png)
+![SlackAlert](http://image.noelshack.com/fichiers/2019/41/2/1570533971-slackalert.png)  
+
 Place a crontab to execute the script periodically in order to be removed from the new subdomains
 ```
 #Execute recon.sh for domain "domain.tld" each monday at 4:00 AM
