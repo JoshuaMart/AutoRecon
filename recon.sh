@@ -38,10 +38,8 @@ scan() {
   banner
   echo -e "Recon is in \e[31mprogress\e[0m, take a coffee"
 
-  ## ENUM SUB-DOMAINS
-  echo -e ">> \e[36mAmass\e[0m is in progress"
-
   ## LAUNCH AMASS (PASSIVE)
+  echo -e ">> \e[36mAmass\e[0m is in progress"
   wget https://raw.githubusercontent.com/danielmiessler/SecLists/master/Discovery/DNS/subdomains-top1million-110000.txt -P $ResultsPath/$domain/ > /dev/null 2>&1
   amass enum -passive -d $domain -o $ResultsPath/$domain/passive.txt > /dev/null 2>&1
   amass enum -active -brute -min-for-recursive 1 -d $domain -o $ResultsPath/$domain/active.txt -p 80,443 -w $ResultsPath/$domain/subdomains-top1million-110000.txt > /dev/null 2>&1
@@ -50,6 +48,7 @@ scan() {
   cat $ResultsPath/$domain/passive.txt $ResultsPath/$domain/active.txt > $ResultsPath/$domain/domain.txt
 
   ## LAUNCH DNSGEN
+  echo -e ">> \e[36mDNSGen\e[0m is in progress"
   cat $ResultsPath/$domain/domain.txt | dnsgen - >> $ResultsPath/$domain/domain.txt
 
   ## SORTS AND REMOVES DUPLICATES
@@ -72,7 +71,7 @@ scan() {
   cat ../domains_$(date +%F).txt | aquatone -chrome-path /snap/bin/chromium -ports xlarge > /dev/null 2>&1
 
   ## REMOVE USELESS FILES
-  rm $ResultsPath/$domain/passive.txt $ResultsPath/$domain/active.txt $ResultsPath/$domain/subdomains-top1million-110000.txt $ResultsPath/resolvers.txt
+  rm $ResultsPath/$domain/passive.txt $ResultsPath/$domain/active.txt $ResultsPath/$domain/subdomains-top1million-110000.txt $ResultsPath/resolvers.txt $ResultsPath/domain.txt
   rm $ResultsPath/$domain/tmp_domains.txt $ResultsPath/$domain/tmp2_domains.txt $ResultsPath/$domain/domains.txt $ResultsPath/$domain/massdns.txt
 
   if [ -v monitor ] ## IF MONITOR OPTION WAS PROVIDE
