@@ -71,7 +71,7 @@ scan() {
   cat ../domains_$(date +%F).txt | aquatone -chrome-path /snap/bin/chromium -ports xlarge > /dev/null 2>&1
 
   ## REMOVE USELESS FILES
-  rm $ResultsPath/$domain/passive.txt $ResultsPath/$domain/active.txt $ResultsPath/$domain/subdomains-top1million-110000.txt $ResultsPath/resolvers.txt $ResultsPath/domain.txt
+  rm $ResultsPath/$domain/passive.txt $ResultsPath/$domain/active.txt $ResultsPath/$domain/subdomains-top1million-110000.txt $ResultsPath/resolvers.txt $ResultsPath/$domain/domain.txt
   rm $ResultsPath/$domain/tmp_domains.txt $ResultsPath/$domain/tmp2_domains.txt $ResultsPath/$domain/domains.txt $ResultsPath/$domain/massdns.txt
 
   if [ -v monitor ] ## IF MONITOR OPTION WAS PROVIDE
