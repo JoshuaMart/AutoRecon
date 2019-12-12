@@ -30,10 +30,6 @@ banner() {
  "
 }
 
-portisopen(){
-  timeout 0.5s /bin/bash -c "echo EOF > /dev/tcp/$p/$2" 2>/dev/null||(echo closed >/dev/stderr; return 1 );
-}
-
 scan() {
   banner
   echo -e "Recon is in \e[31mprogress\e[0m, take a coffee"
@@ -89,7 +85,9 @@ scan() {
       cat $ResultsPath/$domain/monitor/changes.txt | grep '> ' | sed 's/> //g' > $ResultsPath/$domain/monitor/tmp.txt
 
       while read p; do
-        for port in $ports ; do portisopen $p $port 2>/dev/null && (echo "$port";) >> $ResultsPath/$domain/monitor/open_ports.txt;done
+        for port in $ports; do
+          timeout 1 bash -c "echo >/dev/tcp/$p/$port" && (echo "$port" >> open_ports.txt) || (echo "port $port is closed" > /dev/null 2>&1)
+        done
         cat $ResultsPath/$domain/monitor/open_ports.txt | tr '\n' ',' > $ResultsPath/$domain/monitor/open_ports2.txt
         ## SEND SLACK ALERT
         MSG="{\"text\":\"New subdomains $p with open ports :"$(cat $ResultsPath/$domain/monitor/open_ports2.txt)"\"}"
@@ -97,9 +95,12 @@ scan() {
 
         rm $ResultsPath/$domain/monitor/open_ports.txt $ResultsPath/$domain/monitor/open_ports2.txt
       done <$ResultsPath/$domain/monitor/tmp.txt
-      ## RM OLD FILE & MOVE NEW FILE (THIS SCAN) TO OLD (FOR NEXT COMPARISON)
-      rm $ResultsPath/$domain/monitor/tmp.txt $ResultsPath/$domain/monitor/changes.txt $ResultsPath/$domain/monitor/domains_old.txt
-      mv $ResultsPath/$domain/monitor/domains_new.txt $ResultsPath/$domain/monitor/domains_old.txt
+      ## RM OLD FILE & MOVE NEW FILE (THIS SCAN) TO OLD (FOR NEXT COMPARISON
+      cat $ResultsPath/$domain/monitor/domains_old.txt >> $ResultsPath/$domain/monitor/domains_new.txt
+      cat $ResultsPath/$domain/monitor/domains_new.txt | sort | uniq > mv $ResultsPath/$domain/monitor/domains_tmp.txt
+      rm $ResultsPath/$domain/monitor/tmp.txt $ResultsPath/$domain/monitor/changes.txt $ResultsPath/$domain/monitor/domains_old.txt $ResultsPath/$domain/monitor/domains_new.txt
+      mv $ResultsPath/$domain/monitor/domains_tmp.txt $ResultsPath/$domain/monitor/domains_old.txt
+      
     else ## CASE IF IT'S THE FIRST SCAN WITH "-m" OPTION, MOVE NEW FILE (THIS SCAN) TO OLD (FOR NEXT COMPARISON)
       mv $ResultsPath/$domain/monitor/domains_new.txt $ResultsPath/$domain/monitor/domains_old.txt
     fi
