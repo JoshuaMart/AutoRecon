@@ -14,8 +14,9 @@ die() {
 help() {
   banner
   echo -e "Usage : ./recon.sh -d domain.tld -m
-      -d | --domain  (required) : Launch passive scan (Amass & DnsGen)
-      -m | --monitor (optional) : Launch monitoring (Port scanning & Slack alerting)
+      -d  | --domain      (required) : Launch passive scan (Amass & DnsGen)
+      -m  | --monitor     (optional) : Launch monitoring (Port scanning & Slack alerting)
+      -ac | --amassconfig (optional) : Provide Amass configuration files for better results
   "
 }
 
@@ -39,8 +40,14 @@ scan() {
 
   ## LAUNCH AMASS (PASSIVE)
   wget https://raw.githubusercontent.com/danielmiessler/SecLists/master/Discovery/DNS/subdomains-top1million-110000.txt -P $ResultsPath/$domain/ > /dev/null 2>&1
-  amass enum -passive -d $domain -o $ResultsPath/$domain/passive.txt > /dev/null 2>&1
-  amass enum -active -brute -min-for-recursive 1 -d $domain -o $ResultsPath/$domain/active.txt -p 80,443 -w $ResultsPath/$domain/subdomains-top1million-110000.txt > /dev/null 2>&1
+  if [ -z "$ac" ]
+  then
+    amass enum -passive -d $domain -o $ResultsPath/$domain/passive.txt > /dev/null 2>&1
+    amass enum -active -brute -min-for-recursive 1 -d $domain -o $ResultsPath/$domain/active.txt -p 80,443 -w $ResultsPath/$domain/subdomains-top1million-110000.txt > /dev/null 2>&1
+  else
+    amass enum -passive -d $domain -config $ac -o $ResultsPath/$domain/passive.txt > /dev/null 2>&1
+    amass enum -active -brute -min-for-recursive 1 -d $domain -config $ac -o $ResultsPath/$domain/active.txt -p 80,443 -w $ResultsPath/$domain/subdomains-top1million-110000.txt > /dev/null 2>&1
+  fi
 
   ## COMBINE RESULTS OF AMASS PASSIVE & ACTIVE
   cat $ResultsPath/$domain/passive.txt $ResultsPath/$domain/active.txt > $ResultsPath/$domain/domain.txt
@@ -125,6 +132,12 @@ while :; do
             ;;
         --domain=)
             die 'ERROR: "--domain" requires a non-empty option argument.'
+            ;;
+        -ac|--amassconfig)
+            if [ "$2" ]; then
+                ac=$2
+                shift
+            fi
             ;;
         -m|--monitor)
             monitor=true
