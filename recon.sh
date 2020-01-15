@@ -93,7 +93,7 @@ scan() {
 
       while read p; do
         for port in $ports; do
-          timeout 1 bash -c "echo >/dev/tcp/$p/$port" && (echo "$port" >> open_ports.txt) || (echo "port $port is closed" > /dev/null 2>&1)
+          timeout 1 bash -c "echo >/dev/tcp/$p/$port" && (echo "$port" >> $ResultsPath/$domain/monitor/open_ports.txt) || (echo "port $port is closed" > /dev/null 2>&1)
         done
         cat $ResultsPath/$domain/monitor/open_ports.txt | tr '\n' ',' > $ResultsPath/$domain/monitor/open_ports2.txt
         ## SEND SLACK ALERT
