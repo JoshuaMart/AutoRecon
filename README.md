@@ -31,6 +31,7 @@ Options :
 ```bash
 -d | --domain  (required) : Launch passive scan (Amass & DnsGen)
 -m | --monitor (optional) : Launch monitoring (Port scanning & Slack alerting)
+-ac | --amassconfig (optional) : Provide Amass configuration files for better results
 ```
 
 ![RunningScript](https://zupimages.net/up/19/01/41kr.png)
