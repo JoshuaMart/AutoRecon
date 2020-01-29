@@ -57,6 +57,15 @@ scan() {
 
   ## SORTS AND REMOVES DUPLICATES
   sort $ResultsPath/$domain/domain.txt | uniq > $ResultsPath/$domain/domains.txt
+  declare -i lineno=0
+  while read -r line; do
+        echo "Text read from file: $line"
+        let ++lineno
+        if [[ "$(dig @1.1.1.1 A,CNAME {test321123,testingforwildcard,plsdontgimmearesult}.$line +short | wc -l)" -gt "1" ]]; then
+             #echo "[!] Possible wildcard detected : $line"
+             sed -i "1 d" "$ResultsPath/$domain/domains.txt"
+        fi
+  done < "$ResultsPath/$domain/domains.txt"
 
   ## CHECK RESULTS WITH MASSDNS
   echo -e ">> \e[36mMassDNS\e[0m is in progress"
