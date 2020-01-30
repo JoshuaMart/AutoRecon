@@ -60,8 +60,8 @@ scan() {
   declare -i lineno=0
   while IFS= read -r line; do
         let ++lineno
-        line=${line::-1}
-        if [[ "$(dig @1.1.1.1 A,CNAME {test321123,testingforwildcard,plsdontgimmearesult}.$line +short | wc -l)" -gt "1" ]]; then
+        line=$(echo -e "$line"|tr '\n' ' '|tr '\r' ' ' )
+        if [[ "$(dig @1.1.1.1 test32112323123s132Q1Sq32s1Q32S1q32s1Q32S1q32s1Qaqdqsfdfsffds.$line +short | wc -l)" -gt "1" ]]; then
              #echo "[!] Possible wildcard detected : $line"
              sed -i "$lineno d" "$ResultsPath/$domain/domains.txt"
              ((lineno--))
