@@ -43,17 +43,17 @@ scan() {
   if [ -z "$ac" ]
   then
     amass enum -passive -d $domain -o $ResultsPath/$domain/passive.txt > /dev/null 2>&1
-    amass enum -active -brute -min-for-recursive 1 -d $domain -o $ResultsPath/$domain/active.txt -p 80,443 -w $ResultsPath/$domain/subdomains-top1million-110000.txt > /dev/null 2>&1
+    #amass enum -active -brute -min-for-recursive 1 -d $domain -o $ResultsPath/$domain/active.txt -p 80,443 -w $ResultsPath/$domain/subdomains-top1million-110000.txt > /dev/null 2>&1
   else
     amass enum -passive -d $domain -config $ac -o $ResultsPath/$domain/passive.txt > /dev/null 2>&1
-    amass enum -active -brute -min-for-recursive 1 -d $domain -config $ac -o $ResultsPath/$domain/active.txt -p 80,443 -w $ResultsPath/$domain/subdomains-top1million-110000.txt > /dev/null 2>&1
+    #amass enum -active -brute -min-for-recursive 1 -d $domain -config $ac -o $ResultsPath/$domain/active.txt -p 80,443 -w $ResultsPath/$domain/subdomains-top1million-110000.txt > /dev/null 2>&1
   fi
 
   ## COMBINE RESULTS OF AMASS PASSIVE & ACTIVE
   cat $ResultsPath/$domain/passive.txt $ResultsPath/$domain/active.txt > $ResultsPath/$domain/domain.txt
 
   ## LAUNCH DNSGEN
-  cat $ResultsPath/$domain/domain.txt | dnsgen - >> $ResultsPath/$domain/domain.txt
+  #cat $ResultsPath/$domain/domain.txt | dnsgen - >> $ResultsPath/$domain/domain.txt
 
   ## SORTS AND REMOVES DUPLICATES
   sort $ResultsPath/$domain/domain.txt | uniq > $ResultsPath/$domain/domains.txt
@@ -114,7 +114,7 @@ scan() {
       done <$ResultsPath/$domain/monitor/tmp.txt
       ## RM OLD FILE & MOVE NEW FILE (THIS SCAN) TO OLD (FOR NEXT COMPARISON
       cat $ResultsPath/$domain/monitor/domains_old.txt >> $ResultsPath/$domain/monitor/domains_new.txt
-      cat $ResultsPath/$domain/monitor/domains_new.txt | sort | uniq > mv $ResultsPath/$domain/monitor/domains_tmp.txt
+      cat $ResultsPath/$domain/monitor/domains_new.txt | sort | uniq > $ResultsPath/$domain/monitor/domains_tmp.txt
       rm $ResultsPath/$domain/monitor/tmp.txt $ResultsPath/$domain/monitor/changes.txt $ResultsPath/$domain/monitor/domains_old.txt $ResultsPath/$domain/monitor/domains_new.txt
       mv $ResultsPath/$domain/monitor/domains_tmp.txt $ResultsPath/$domain/monitor/domains_old.txt
       
