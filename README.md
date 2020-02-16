@@ -4,6 +4,7 @@
 ## Features
 - Enum subdomains with [Amass](https://github.com/OWASP/Amass/)
 - Create permutations with [DnsGen](https://github.com/ProjectAnte/dnsgen)
+- Check and remove wildcard
 - Combination of results, check with [MassDNS](https://github.com/blechschmidt/massdns)
 - Scan with [Aquatone](https://github.com/michenriksen/aquatone)
 - New subdomains alerts with open ports
@@ -18,7 +19,7 @@ Run installer :
 ./install.sh
 source ~/.bashrc
 ```
-Modify line 4 & 5 of ```recon.sh``` and add your result path & your slack webhook token
+Modify line 5 of ```recon.sh``` and add your slack webhook token
 If necessary it is necessary to configure [Amass](https://github.com/OWASP/Amass/) with the desired API keys
 
 ## Usage
@@ -32,6 +33,7 @@ Options :
 -d | --domain  (required) : Launch passive scan (Amass & DnsGen)
 -m | --monitor (optional) : Launch monitoring (Port scanning & Slack alerting)
 -ac | --amassconfig (optional) : Provide Amass configuration files for better results
+-rp | --resultspath (optional) : Defines the output folder
 ```
 
 ![RunningScript](https://zupimages.net/up/19/01/41kr.png)

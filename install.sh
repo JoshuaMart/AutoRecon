@@ -7,6 +7,9 @@ rm README.md
 #Install requierements
 apt-get install python3 python3-pip unzip libldns-dev git snapd dnsutils -y
 
+#Ensures that the snapd service is running.
+systemctl start snapd
+
 #Install Aquatone
 wget https://github.com/michenriksen/aquatone/releases/download/v1.7.0/aquatone_linux_amd64_1.7.0.zip
 unzip aquatone_linux_amd64_1.7.0.zip

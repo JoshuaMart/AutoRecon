@@ -2,7 +2,7 @@
 
 ## VARIABLES
 ResultsPath="/root/Recon"
-HOOK="https://hooks.slack.com/services/XXXX/XXXXX"
+HOOK="https://hooks.slack.com/services/XXXXXXX/XXXXXX/XXXXXXXXXXXXX"
 ports="80 81 300 443 591 593 832 981 1010 1311 2082 2087 2095 2096 2480 3000 3128 3333 4243 4567 4711 4712 4993 5000 5104 5108 5800 6543 7000 7396 7474 8000 8001 8008 8014 8042 8069 8080 8081 8088 8090 8091 8118 8123 8172 8222 8243 8280 8281 8333 8443 8500 8834 8880 8888 8983 9000 9043 9060 9080 9090 9091 9200 9443 9800 9981 12443 16080 18091 18092 20720 28017"
 
 ## FUNCTION
@@ -17,6 +17,7 @@ help() {
       -d  | --domain      (required) : Launch passive scan (Amass & DnsGen)
       -m  | --monitor     (optional) : Launch monitoring (Port scanning & Slack alerting)
       -ac | --amassconfig (optional) : Provide Amass configuration files for better results
+      -rp | --resultspath (optional) : Defines the output folder
   "
 }
 
@@ -43,26 +44,25 @@ scan() {
   if [ -z "$ac" ]
   then
     amass enum -passive -d $domain -o $ResultsPath/$domain/passive.txt > /dev/null 2>&1
-    #amass enum -active -brute -min-for-recursive 1 -d $domain -o $ResultsPath/$domain/active.txt -p 80,443 -w $ResultsPath/$domain/subdomains-top1million-110000.txt > /dev/null 2>&1
+    amass enum -active -brute -min-for-recursive 1 -d $domain -o $ResultsPath/$domain/active.txt -p 80,443 -w $ResultsPath/$domain/subdomains-top1million-110000.txt > /dev/null 2>&1
   else
     amass enum -passive -d $domain -config $ac -o $ResultsPath/$domain/passive.txt > /dev/null 2>&1
-    #amass enum -active -brute -min-for-recursive 1 -d $domain -config $ac -o $ResultsPath/$domain/active.txt -p 80,443 -w $ResultsPath/$domain/subdomains-top1million-110000.txt > /dev/null 2>&1
+    amass enum -active -brute -min-for-recursive 1 -d $domain -config $ac -o $ResultsPath/$domain/active.txt -p 80,443 -w $ResultsPath/$domain/subdomains-top1million-110000.txt > /dev/null 2>&1
   fi
 
   ## COMBINE RESULTS OF AMASS PASSIVE & ACTIVE
   cat $ResultsPath/$domain/passive.txt $ResultsPath/$domain/active.txt > $ResultsPath/$domain/domain.txt
 
   ## LAUNCH DNSGEN
-  #cat $ResultsPath/$domain/domain.txt | dnsgen - >> $ResultsPath/$domain/domain.txt
+  cat $ResultsPath/$domain/domain.txt | dnsgen - >> $ResultsPath/$domain/domain.txt
 
   ## SORTS AND REMOVES DUPLICATES
-  sort $ResultsPath/$domain/domain.txt | uniq > $ResultsPath/$domain/domains.txt
+  sort -u $ResultsPath/$domain/domain.txt > $ResultsPath/$domain/domains.txt
   declare -i lineno=0
   while IFS= read -r line; do
         let ++lineno
         line=$(echo -e "$line"|tr '\n' ' '|tr '\r' ' ' )
         if [[ "$(dig @1.1.1.1 test32112323123s132Q1Sq32s1Q32S1q32s1Q32S1q32s1Qaqdqsfdfsffds.$line +short | wc -l)" -gt "1" ]]; then
-             #echo "[!] Possible wildcard detected : $line"
              sed -i "$lineno d" "$ResultsPath/$domain/domains.txt"
              ((lineno--))
         fi
@@ -76,7 +76,7 @@ scan() {
   ## CLEAN MASSDNS RESULTS
   grep -Po "([A-Za-z0-9]).*$domain" $ResultsPath/$domain/massdns.txt > $ResultsPath/$domain/tmp_domains.txt
   sed 's/\..CNAME.*/ /g' $ResultsPath/$domain/tmp_domains.txt > $ResultsPath/$domain/tmp2_domains.txt
-  sed 's/CNAME.*/ /g' $ResultsPath/$domain/tmp2_domains.txt | sort | uniq > $ResultsPath/$domain/domains_$(date +%F).txt
+  sed 's/CNAME.*/ /g' $ResultsPath/$domain/tmp2_domains.txt | sort -u > $ResultsPath/$domain/domains_$(date +%F).txt
   
   ## LAUNCH AQUATONE
   echo -e ">> \e[36mAquatone\e[0m is in progress"
@@ -114,7 +114,7 @@ scan() {
       done <$ResultsPath/$domain/monitor/tmp.txt
       ## RM OLD FILE & MOVE NEW FILE (THIS SCAN) TO OLD (FOR NEXT COMPARISON
       cat $ResultsPath/$domain/monitor/domains_old.txt >> $ResultsPath/$domain/monitor/domains_new.txt
-      cat $ResultsPath/$domain/monitor/domains_new.txt | sort | uniq > $ResultsPath/$domain/monitor/domains_tmp.txt
+      cat $ResultsPath/$domain/monitor/domains_new.txt | sort -u > $ResultsPath/$domain/monitor/domains_tmp.txt
       rm $ResultsPath/$domain/monitor/tmp.txt $ResultsPath/$domain/monitor/changes.txt $ResultsPath/$domain/monitor/domains_old.txt $ResultsPath/$domain/monitor/domains_new.txt
       mv $ResultsPath/$domain/monitor/domains_tmp.txt $ResultsPath/$domain/monitor/domains_old.txt
       
@@ -149,6 +149,12 @@ while :; do
                 shift
             fi
             ;;
+        -rp|--resultspath)
+            if [ "$2" ]; then
+                ResultsPath=$2
+                shift
+            fi
+            ;;
         -m|--monitor)
             monitor=true
             ;;
@@ -172,7 +178,7 @@ then
   die 'ERROR: "--domain" requires a non-empty option argument.'
 else
   if [ ! -d "$ResultsPath/$domain" ];then
-    mkdir $ResultsPath/$domain
+    mkdir -p $ResultsPath/$domain
   else
     cd $ResultsPath/$domain/
     ls | grep -v monitor | xargs rm -r
