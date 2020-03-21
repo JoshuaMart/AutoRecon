@@ -4,12 +4,12 @@
 ## Features
 - Enum subdomains with [Amass](https://github.com/OWASP/Amass/)
 - Create permutations with [DnsGen](https://github.com/ProjectAnte/dnsgen)
-- Check and remove wildcard
-- Combination of results, check with [MassDNS](https://github.com/blechschmidt/massdns)
+- Check and remove wildcard with [ShuffleDNS](https://github.com/projectdiscovery/shuffledns)
 - Scan with [Aquatone](https://github.com/michenriksen/aquatone)
-- New subdomains alerts with open ports
 
-![Workflow](https://zupimages.net/up/19/01/pdd2.png)
+How I use this tool for BugBounty : [My subdomains enumeration process](https://www.jomar.fr/posts/2020/03/en-my-subdomains-enumeration-process/)
+
+![Workflow](https://zupimages.net/up/20/12/a8re.png)
 
 ## Installation
 - Installation & Recon tested on Debian 10
@@ -20,28 +20,19 @@ Run installer :
 source ~/.bashrc
 ```
 Modify line 5 of ```recon.sh``` and add your slack webhook token
-If necessary it is necessary to configure [Amass](https://github.com/OWASP/Amass/) with the desired API keys
+If wanted (recommended), configure [Amass](https://github.com/OWASP/Amass/) with the desired API keys
 
 ## Usage
 
 ```bash
-./recon.sh -d domain.tld
+./recon.sh -d domain.tld -c ~/Tools/Amass/config.ini
 ```
 
 Options :
 ```bash
--d | --domain  (required) : Launch passive scan (Amass & DnsGen)
--m | --monitor (optional) : Launch monitoring (Port scanning & Slack alerting)
--ac | --amassconfig (optional) : Provide Amass configuration files for better results
+-d  | --domain      (required) : Launch passive scan (Amass & DnsGen)
+-c  | --amassconfig (optional) : Provide Amass configuration files for better results
 -rp | --resultspath (optional) : Defines the output folder
 ```
 
-![RunningScript](https://zupimages.net/up/19/01/41kr.png)
-
-![SlackAlert](https://zupimages.net/up/19/01/xibo.png)
-
-Place a crontab to execute the script periodically in order to be removed from the new subdomains
-```
-#Execute recon.sh for domain "domain.tld" each monday at 4:00 AM
-0 4 * * 1 /root/recon.sh -d domain.tld -m
-```
+![RunningScript](https://zupimages.net/up/20/12/176d.png)

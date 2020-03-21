@@ -24,6 +24,12 @@ mv bin/massdns /usr/local/bin
 cd ..
 rm -r massdns
 
+#Install ShuffleDNS
+wget https://github.com/projectdiscovery/shuffledns/releases/download/v1.0.2/shuffledns-linux-amd64.tar
+tar -xzvf shuffledns-linux-amd64.tar
+mv shuffledns-linux-amd64 /usr/bin/shuffledns
+rm shuffledns-linux-amd64.tar
+
 #Install Chromium for Aquatone
 snap install chromium
 
@@ -37,5 +43,4 @@ pip3 install dnsgen
 echo -e "export PATH=\"$PATH:/snap/bin\"" >> ~/.bashrc
 
 ## END
-
 rm install.sh

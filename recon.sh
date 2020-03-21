@@ -14,21 +14,20 @@ die() {
 help() {
   banner
   echo -e "Usage : ./recon.sh -d domain.tld -m
-      -d  | --domain      (required) : Launch passive scan (Amass & DnsGen)
-      -m  | --monitor     (optional) : Launch monitoring (Port scanning & Slack alerting)
-      -ac | --amassconfig (optional) : Provide Amass configuration files for better results
+      -d  | --domain      (required) : Domain in domain.tld format
+      -c  | --amassconfig (optional) : Provide Amass configuration files for better results
       -rp | --resultspath (optional) : Defines the output folder
   "
 }
 
 banner() {
   echo -e "
-                _        _____                      
-     /\        | |      |  __ \                     
-    /  \  _   _| |_ ___ | |__) |___  ___ ___  _ __  
-   / /\ \| | | | __/ _ \|  _  // _ \/ __/ _ \| '_ \ 
-  / ____ \ |_| | || (_) | | \ \  __/ (_| (_) | | | |
- /_/    \_\__,_|\__\___/|_|  \_\___|\___\___/|_| |_|
+ █████╗ ██╗   ██╗████████╗ ██████╗ ██████╗ ███████╗ ██████╗ ██████╗ ███╗   ██╗
+██╔══██╗██║   ██║╚══██╔══╝██╔═══██╗██╔══██╗██╔════╝██╔════╝██╔═══██╗████╗  ██║
+███████║██║   ██║   ██║   ██║   ██║██████╔╝█████╗  ██║     ██║   ██║██╔██╗ ██║
+██╔══██║██║   ██║   ██║   ██║   ██║██╔══██╗██╔══╝  ██║     ██║   ██║██║╚██╗██║
+██║  ██║╚██████╔╝   ██║   ╚██████╔╝██║  ██║███████╗╚██████╗╚██████╔╝██║ ╚████║
+╚═╝  ╚═╝ ╚═════╝    ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝
  "
 }
 
@@ -43,38 +42,25 @@ scan() {
   wget https://raw.githubusercontent.com/danielmiessler/SecLists/master/Discovery/DNS/subdomains-top1million-110000.txt -P $ResultsPath/$domain/ > /dev/null 2>&1
   if [ -z "$ac" ]
   then
-    amass enum -passive -d $domain -o $ResultsPath/$domain/passive.txt > /dev/null 2>&1
-    amass enum -active -brute -min-for-recursive 1 -d $domain -o $ResultsPath/$domain/active.txt -p 80,443 -w $ResultsPath/$domain/subdomains-top1million-110000.txt > /dev/null 2>&1
+    amass enum -active -brute -min-for-recursive 1 -d $domain -o $ResultsPath/$domain/domain.txt -w $ResultsPath/$domain/subdomains-top1million-110000.txt > /dev/null 2>&1
   else
-    amass enum -passive -d $domain -config $ac -o $ResultsPath/$domain/passive.txt > /dev/null 2>&1
-    amass enum -active -brute -min-for-recursive 1 -d $domain -config $ac -o $ResultsPath/$domain/active.txt -p 80,443 -w $ResultsPath/$domain/subdomains-top1million-110000.txt > /dev/null 2>&1
+    amass enum -active -brute -min-for-recursive 1 -d $domain -config $ac -o $ResultsPath/$domain/domain.txt -w $ResultsPath/$domain/subdomains-top1million-110000.txt > /dev/null 2>&1
   fi
 
-  ## COMBINE RESULTS OF AMASS PASSIVE & ACTIVE
-  cat $ResultsPath/$domain/passive.txt $ResultsPath/$domain/active.txt > $ResultsPath/$domain/domain.txt
-
   ## LAUNCH DNSGEN
+  echo -e ">> \e[36mDNSGen\e[0m is in progress"
   cat $ResultsPath/$domain/domain.txt | dnsgen - >> $ResultsPath/$domain/domain.txt
 
   ## SORTS AND REMOVES DUPLICATES
   sort -u $ResultsPath/$domain/domain.txt > $ResultsPath/$domain/domains.txt
-  declare -i lineno=0
-  while IFS= read -r line; do
-        let ++lineno
-        line=$(echo -e "$line"|tr '\n' ' '|tr '\r' ' ' )
-        if [[ "$(dig @1.1.1.1 test32112323123s132Q1Sq32s1Q32S1q32s1Q32S1q32s1Qaqdqsfdfsffds.$line +short | wc -l)" -gt "1" ]]; then
-             sed -i "$lineno d" "$ResultsPath/$domain/domains.txt"
-             ((lineno--))
-        fi
-  done < "$ResultsPath/$domain/domains.txt"
 
-  ## CHECK RESULTS WITH MASSDNS
-  echo -e ">> \e[36mMassDNS\e[0m is in progress"
+  ## CHECK RESULTS WITH SHUFFLEDNS
+  echo -e ">> \e[36mShuffleDNS\e[0m is in progress"
   printf "8.8.8.8\n1.1.1.1" > $ResultsPath/resolvers.txt
-  massdns -r $ResultsPath/resolvers.txt -t A -o S -w $ResultsPath/$domain/massdns.txt $ResultsPath/$domain/domains.txt > /dev/null 2>&1 
+  shuffledns -d $domain -list $ResultsPath/$domain/domain.txt -r $ResultsPath/resolvers.txt -o $ResultsPath/$domain/shuffledns.txt -silent > /dev/null 2>&1
 
-  ## CLEAN MASSDNS RESULTS
-  grep -Po "([A-Za-z0-9]).*$domain" $ResultsPath/$domain/massdns.txt > $ResultsPath/$domain/tmp_domains.txt
+  ## CLEAN SHUFFLEDNS RESULTS
+  grep -Po "([A-Za-z0-9]).*$domain" $ResultsPath/$domain/shuffledns.txt > $ResultsPath/$domain/tmp_domains.txt
   sed 's/\..CNAME.*/ /g' $ResultsPath/$domain/tmp_domains.txt > $ResultsPath/$domain/tmp2_domains.txt
   sed 's/CNAME.*/ /g' $ResultsPath/$domain/tmp2_domains.txt | sort -u > $ResultsPath/$domain/domains_$(date +%F).txt
   
@@ -85,45 +71,10 @@ scan() {
   cat ../domains_$(date +%F).txt | aquatone -chrome-path /snap/bin/chromium -ports xlarge > /dev/null 2>&1
 
   ## REMOVE USELESS FILES
-  rm $ResultsPath/$domain/passive.txt $ResultsPath/$domain/active.txt $ResultsPath/$domain/subdomains-top1million-110000.txt $ResultsPath/resolvers.txt
-  rm $ResultsPath/$domain/tmp_domains.txt $ResultsPath/$domain/tmp2_domains.txt $ResultsPath/$domain/domains.txt $ResultsPath/$domain/massdns.txt
-
-  if [ -v monitor ] ## IF MONITOR OPTION WAS PROVIDE
-  then
-    echo -e ">> \e[36mMonitoring\e[0m process is in progress"
-    if [ ! -d "$ResultsPath/$domain/monitor" ];then
-      mkdir $ResultsPath/$domain/monitor
-    fi
-
-    cp $ResultsPath/$domain/domains_$(date +%F).txt $ResultsPath/$domain/monitor/domains_new.txt
-    
-    if [ -f "$ResultsPath/$domain/monitor/domains_old.txt" ]; then
-      diff $ResultsPath/$domain/monitor/domains_old.txt $ResultsPath/$domain/monitor/domains_new.txt > $ResultsPath/$domain/monitor/changes.txt
-      cat $ResultsPath/$domain/monitor/changes.txt | grep '> ' | sed 's/> //g' > $ResultsPath/$domain/monitor/tmp.txt
-
-      while read p; do
-        for port in $ports; do
-          timeout 1 bash -c "echo >/dev/tcp/$p/$port" && (echo "$port" >> $ResultsPath/$domain/monitor/open_ports.txt) || (echo "port $port is closed" > /dev/null 2>&1)
-        done
-        cat $ResultsPath/$domain/monitor/open_ports.txt | tr '\n' ',' > $ResultsPath/$domain/monitor/open_ports2.txt
-        ## SEND SLACK ALERT
-        MSG="{\"text\":\"New subdomains $p with open ports :"$(cat $ResultsPath/$domain/monitor/open_ports2.txt)"\"}"
-        curl -X POST -H 'Content-type: application/json' --data "$MSG" $HOOK
-
-        rm $ResultsPath/$domain/monitor/open_ports.txt $ResultsPath/$domain/monitor/open_ports2.txt
-      done <$ResultsPath/$domain/monitor/tmp.txt
-      ## RM OLD FILE & MOVE NEW FILE (THIS SCAN) TO OLD (FOR NEXT COMPARISON
-      cat $ResultsPath/$domain/monitor/domains_old.txt >> $ResultsPath/$domain/monitor/domains_new.txt
-      cat $ResultsPath/$domain/monitor/domains_new.txt | sort -u > $ResultsPath/$domain/monitor/domains_tmp.txt
-      rm $ResultsPath/$domain/monitor/tmp.txt $ResultsPath/$domain/monitor/changes.txt $ResultsPath/$domain/monitor/domains_old.txt $ResultsPath/$domain/monitor/domains_new.txt
-      mv $ResultsPath/$domain/monitor/domains_tmp.txt $ResultsPath/$domain/monitor/domains_old.txt
-      
-    else ## CASE IF IT'S THE FIRST SCAN WITH "-m" OPTION, MOVE NEW FILE (THIS SCAN) TO OLD (FOR NEXT COMPARISON)
-      mv $ResultsPath/$domain/monitor/domains_new.txt $ResultsPath/$domain/monitor/domains_old.txt
-    fi
-  fi
+  rm $ResultsPath/$domain/domain.txt $ResultsPath/$domain/subdomains-top1million-110000.txt $ResultsPath/resolvers.txt $ResultsPath/$domain/shuffledns.txt
+  rm $ResultsPath/$domain/tmp_domains.txt $ResultsPath/$domain/tmp2_domains.txt $ResultsPath/$domain/domains.txt
  
-  echo -e "\n=========== Recon is \e[32mfinish\e[0m ==========="
+  echo -e "=========== Recon is \e[32mfinish\e[0m ==========="
 }
 
 while :; do
@@ -143,7 +94,7 @@ while :; do
         --domain=)
             die 'ERROR: "--domain" requires a non-empty option argument.'
             ;;
-        -ac|--amassconfig)
+        -c|--amassconfig)
             if [ "$2" ]; then
                 ac=$2
                 shift
@@ -154,9 +105,6 @@ while :; do
                 ResultsPath=$2
                 shift
             fi
-            ;;
-        -m|--monitor)
-            monitor=true
             ;;
         --)
             shift
