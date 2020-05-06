@@ -5,7 +5,7 @@ apt-get update && apt-get upgrade -y
 rm README.md
 
 #Install requierements
-apt-get install python3 python3-pip unzip libldns-dev git snapd dnsutils -y
+apt-get install unzip libldns-dev git snapd dnsutils -y
 
 #Ensures that the snapd service is running.
 systemctl start snapd
@@ -16,31 +16,15 @@ unzip aquatone_linux_amd64_1.7.0.zip
 rm aquatone_linux_amd64_1.7.0.zip README.md LICENSE.txt
 mv aquatone /usr/local/bin/
 
-#Install massdns
-git clone https://github.com/blechschmidt/massdns.git
-cd massdns
-make
-mv bin/massdns /usr/local/bin
-cd ..
-rm -r massdns
-
-#Install ShuffleDNS
-wget https://github.com/projectdiscovery/shuffledns/releases/download/v1.0.2/shuffledns-linux-amd64.tar
-tar -xzvf shuffledns-linux-amd64.tar
-mv shuffledns-linux-amd64 /usr/bin/shuffledns
-rm shuffledns-linux-amd64.tar
-
 #Install Chromium for Aquatone
 snap install chromium
 
 #Install Amass for recon
 snap install amass
 
-#Install DnsGen
-pip3 install dnsgen
-
 #Add /snap/bin to $PATH
-echo -e "export PATH=\"$PATH:/snap/bin\"" >> ~/.bashrc
+echo -e "export PATH=\"$PATH:/snap/bin\"" >> ~/.profile
+source ~/.profile
 
 ## END
 rm install.sh
