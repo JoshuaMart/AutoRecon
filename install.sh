@@ -33,16 +33,12 @@ snap install chromium
 snap install amass
 
 ## Install Nuclei
-wget https://github.com/projectdiscovery/nuclei/releases/download/v1.1.3/nuclei-linux-amd64.gz
-gunzip nuclei-linux-amd64.gz
-mv nuclei-linux-amd64 /usr/bin/nuclei
-chmod +x /usr/bin/nuclei
+wget https://github.com/projectdiscovery/nuclei/releases/download/v2.0.4/nuclei_2.0.4_linux_amd64.tar.gz
+tar -xzvf nuclei_2.0.4_linux_amd64.tar.gz
+rm LICENSE.md README.md
+mv nuclei /usr/bin/nuclei
 
-cd $Tools
-git clone https://github.com/projectdiscovery/nuclei-templates
-cd nuclei-templates
-mkdir all
-cp $(find . -type f -name '*.yaml') all/
+nuclei -update-templates -update-directory $Tools
 
 ## Install Httprobe
 go get -u github.com/tomnomnom/httprobe

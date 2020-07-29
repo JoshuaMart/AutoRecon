@@ -39,7 +39,7 @@ scan() {
   ## Nuclei
 	echo -e ">> \e[36mNuclei\e[0m is in progress"
 	echo -e $1 | httprobe -p http:81 -p https:81 -p https:8443 -p http:8080 -p https:8080 > $ResultsPath/$domain/$(date +%F)/$1/httprobe.txt
-  nuclei -l $ResultsPath/$domain/$(date +%F)/$1/httprobe.txt -t "$ToolsPath/nuclei-templates/all/*.yaml" -o $ResultsPath/$domain/$(date +%F)/$1/nuclei.txt > /dev/null 2>&1
+  nuclei -l $ResultsPath/$domain/$(date +%F)/$1/httprobe.txt -t $ToolsPath/nuclei-templates/ -o $ResultsPath/$domain/$(date +%F)/$1/nuclei.txt > /dev/null 2>&1
 
   ## GAU
   echo -e ">> \e[36mGAU\e[0m is in progress"
