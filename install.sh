@@ -33,8 +33,8 @@ snap install chromium
 snap install amass
 
 ## Install Nuclei
-wget https://github.com/projectdiscovery/nuclei/releases/download/v2.0.4/nuclei_2.0.4_linux_amd64.tar.gz
-tar -xzvf nuclei_2.0.4_linux_amd64.tar.gz
+wget https://github.com/projectdiscovery/nuclei/releases/download/v2.1.0/nuclei_2.1.0_linux_amd64.tar.gz
+tar -xzvf nuclei_2.1.0_linux_amd64.tar.gz
 rm LICENSE.md README.md
 mv nuclei /usr/bin/nuclei
 
