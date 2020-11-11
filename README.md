@@ -8,7 +8,7 @@
 
 - Enum subdomains, create permutation & wildcard removing with [Amass](https://github.com/OWASP/Amass/)
 - Search subdomains on github with [Github-Subdomains](https://github.com/gwen001/github-search/blob/master/github-subdomains.py)
-- Find web services and screenshots with[Aquatone](https://github.com/michenriksen/aquatone)
+- Find web services and screenshots with [Aquatone](https://github.com/michenriksen/aquatone)
 -  [Nuclei](https://github.com/projectdiscovery/nuclei) : Configurable targeted scanning based on templates
 -  [Gau](https://github.com/lc/gau) : Fetch known URLs from AlienVault's Open Threat Exchange, the Wayback Machine, and Common Crawl for any given domain.
 -  [Hakrawler](https://github.com/hakluke/hakrawler) : Simple, fast web crawler
